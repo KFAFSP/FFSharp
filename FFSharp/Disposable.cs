@@ -125,8 +125,8 @@ namespace FFSharp
             Debug.Assert(
                 !IsDisposed,
                 "Instance is disposed.",
-                "An operation was attempted on a disposed instance. This indicates a severe logic" +
-                "error."
+                "An operation was attempted on a disposed instance. This indicates a severe " +
+                "logic error."
             );
         }
 
