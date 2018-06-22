@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace FFSharp.Native
 {
@@ -73,16 +74,17 @@ namespace FFSharp.Native
         /// <summary>
         /// Get the underlying pointer.
         /// </summary>
-        T* Ptr { get; }
+        [CanBeNull]
+        public T* Ptr { get; }
         /// <summary>
         /// Get the address of the underlying pointer.
         /// </summary>
-        IntPtr Address => (IntPtr) Ptr;
+        public IntPtr Address => (IntPtr) Ptr;
 
         /// <summary>
         /// Get a value indicating whether this reference is <see cref="Null"/>.
         /// </summary>
-        bool IsNull => Ptr == null;
+        public bool IsNull => Ptr == null;
 
         #region Operator overloads
         /// <summary>
