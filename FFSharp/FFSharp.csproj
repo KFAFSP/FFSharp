@@ -45,6 +45,7 @@
     <Compile Include="FFmpegError.cs" />
     <Compile Include="FFmpegHelper.cs" />
     <Compile Include="FFmpegException.cs" />
+    <Compile Include="Native\Internalized.cs" />
     <Compile Include="Native\Ref.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
