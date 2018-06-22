@@ -40,7 +40,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BadAllocationException.cs" />
     <Compile Include="Disposable.cs" />
+    <Compile Include="FFmpegError.cs" />
+    <Compile Include="FFmpegHelper.cs" />
+    <Compile Include="FFmpegException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
