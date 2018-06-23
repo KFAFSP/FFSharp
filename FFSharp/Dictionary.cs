@@ -166,23 +166,29 @@ namespace FFSharp
         internal Ref<Unsafe.AVDictionary> Ref;
 
         /// <summary>
-        /// Create a new <see cref="AVDictionary"/> instance.
+        /// Create a new <see cref="Dictionary"/> instance.
         /// </summary>
+        /// <param name="ARef">The <see cref="Unsafe.AVDictionary"/>.</param>
         /// <param name="AFlags">The <see cref="AVDictFlags"/>.</param>
-        internal Dictionary(AVDictFlags AFlags)
+        internal Dictionary(Ref<Unsafe.AVDictionary> ARef, AVDictFlags AFlags)
         {
-            Ref = AVDictionary.Alloc();
+            Ref = ARef;
             Flags = AFlags;
 
             Keys = new KeyCollection(this);
             Values = new ValueCollection(this);
         }
         /// <summary>
-        /// Create a new <see cref="AVDictionary"/> instance.
+        /// Create a new <see cref="Dictionary"/> instance.
         /// </summary>
         /// <param name="AIgnoreCase">If <c>true</c>, ignore case when comparing keys.</param>
         public Dictionary(bool AIgnoreCase = true)
-        : this(AIgnoreCase ? AVDictFlags.NONE : AVDictFlags.AV_DICT_MATCH_CASE)
+        : this(
+            AVDictionary.Alloc(),
+            AIgnoreCase
+                ? AVDictFlags.NONE
+                : AVDictFlags.AV_DICT_MATCH_CASE
+        )
         { }
 
         /// <summary>
