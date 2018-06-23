@@ -148,7 +148,17 @@ namespace FFSharp
         /// <exception cref="ArgumentNullException">
         /// <paramref name="APairsSep"/> is <see langword="null"/>.
         /// </exception>
-        /// <exception cref="FFmpegError">Error deserializing string.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> contains invalid or no characters.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="APairsSep"/> contains invalid or no characters.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> and <paramref name="APairsSep"/> share one ore more
+        /// common characters.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error parsing string.</exception>
         [ContractAnnotation("AKeyValSep: null => halt; APairsSep: null => halt")]
         [NotNull]
         public static Dictionary Parse(
