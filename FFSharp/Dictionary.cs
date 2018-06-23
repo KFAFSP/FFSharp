@@ -58,10 +58,13 @@ namespace FFSharp
 
             #region ICollection<string>
             /// <inheritdoc />
+            [ContractAnnotation("=> halt")]
             public void Add(string AItem) => throw new NotSupportedException();
             /// <inheritdoc />
+            [ContractAnnotation("=> halt")]
             public bool Remove(string AIitem) => throw new NotSupportedException();
             /// <inheritdoc />
+            [ContractAnnotation("=> halt")]
             public void Clear() => throw new NotSupportedException();
 
             /// <inheritdoc />
@@ -136,21 +139,29 @@ namespace FFSharp
         /// </summary>
         /// <param name="AString">The string to parse.</param>
         /// <param name="AKeyValSep">The key-value separator list.</param>
-        /// <param name="APairSep">The pairs separator list.</param>
+        /// <param name="APairsSep">The pairs separator list.</param>
         /// <param name="AIgnoreCase">If <c>true</c>, case is ignored when comparing keys.</param>
         /// <returns>The parsed <see cref="Dictionary"/>.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKeyValSep"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="APairsSep"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error deserializing string.</exception>
+        [ContractAnnotation("AKeyValSep: null => halt; APairsSep: null => halt")]
         [NotNull]
         public static Dictionary Parse(
             [CanBeNull] string AString,
             string AKeyValSep,
-            string APairSep,
+            string APairsSep,
             bool AIgnoreCase = true
         )
         {
             Dictionary result = new Dictionary(AIgnoreCase);
             try
             {
-                result.Deserialize(AString, AKeyValSep, APairSep);
+                result.Deserialize(AString, AKeyValSep, APairsSep);
                 return result;
             }
             catch
@@ -206,6 +217,10 @@ namespace FFSharp
         /// Copy the contents of this <see cref="Dictionary"/> to another.
         /// </summary>
         /// <param name="ADictionary"></param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="ADictionary"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error copying values.</exception>
         [ContractAnnotation("ADictionary: null => halt")]
         public void CopyTo(Dictionary ADictionary)
         {
@@ -220,10 +235,11 @@ namespace FFSharp
         /// Clone this <see cref="Dictionary"/>.
         /// </summary>
         /// <returns>The cloned <see cref="Dictionary"/>.</returns>
+        /// <exception cref="FFmpegError">Error copying values.</exception>
         [NotNull]
         public Dictionary Clone()
         {
-            var clone = new Dictionary(Flags);
+            var clone = new Dictionary(AVDictionary.Alloc(), Flags);
 
             try
             {
@@ -244,6 +260,16 @@ namespace FFSharp
         /// <param name="AKeyValSep">The key-value separator.</param>
         /// <param name="APairsSep">The pairs separator.</param>
         /// <returns>The serialized string.</returns>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> is invalid.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="APairsSep"/> is invalid.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> and <paramref name="APairsSep"/> are equal.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error building string.</exception>
         [NotNull]
         public string Serialize(char AKeyValSep, char APairsSep)
         {
@@ -273,6 +299,24 @@ namespace FFSharp
         /// <param name="AString">The string to deserialize.</param>
         /// <param name="AKeyValSep">The key-value separator list.</param>
         /// <param name="APairsSep">The pair separator list.</param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKeyValSep"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="APairsSep"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> contains invalid or no characters.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="APairsSep"/> contains invalid or no characters.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="AKeyValSep"/> and <paramref name="APairsSep"/> share one ore more
+        /// common characters.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error parsing string.</exception>
+        [ContractAnnotation("AKeyValSep: null => halt; APairsSep: null => halt")]
         public void Deserialize([CanBeNull] string AString, string AKeyValSep, string APairsSep)
         {
             const char C_Null = '\0';
@@ -291,13 +335,13 @@ namespace FFSharp
                 throw new ArgumentNullException(nameof(APairsSep));
             }
 
-            if (AKeyValSep.Any(X => X == C_Null || X == C_Slash))
+            if (AKeyValSep.Length == 0 || AKeyValSep.Any(X => X == C_Null || X == C_Slash))
             {
-                throw new ArgumentException("Invalid character.", nameof(AKeyValSep));
+                throw new ArgumentException("Invalid character(s).", nameof(AKeyValSep));
             }
-            if (APairsSep.Any(X => X == C_Null || X == C_Slash))
+            if (APairsSep.Length == 0 || APairsSep.Any(X => X == C_Null || X == C_Slash))
             {
-                throw new ArgumentException("Invalid character.", nameof(APairsSep));
+                throw new ArgumentException("Invalid character(s).", nameof(APairsSep));
             }
             if (AKeyValSep.Union(APairsSep).Any())
             {
@@ -309,8 +353,11 @@ namespace FFSharp
 
         #region IDictionary<string, string>
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKey"/> is <see langword="null"/>.
+        /// </exception>
         [ContractAnnotation("AKey: null => halt")]
-        public unsafe bool TryGetValue(string AKey, out string AValue)
+        public unsafe bool TryGetValue(string AKey, [CanBeNull] out string AValue)
         {
             if (AKey == null)
             {
@@ -328,10 +375,17 @@ namespace FFSharp
             return true;
         }
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKey"/> is <see langword="null"/>.
+        /// </exception>
         [ContractAnnotation("AKey: null => halt")]
         public bool ContainsKey(string AKey) => TryGetValue(AKey, out _);
 
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKey"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error setting value.</exception>
         [ContractAnnotation("AKey: null => halt")]
         public void Add(string AKey, string AValue)
         {
@@ -343,6 +397,10 @@ namespace FFSharp
             AVDictionary.Set(ref Ref, AKey, AValue, Flags);
         }
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKey"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error setting value.</exception>
         [ContractAnnotation("AKey: null => halt")]
         public bool Remove(string AKey)
         {
@@ -361,6 +419,10 @@ namespace FFSharp
         public ICollection<string> Values { get; }
 
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AKey"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="FFmpegError">Error setting value.</exception>
         public string this[string AKey]
         {
             [ContractAnnotation("AKey: null => halt")]

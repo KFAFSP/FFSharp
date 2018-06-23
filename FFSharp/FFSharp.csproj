@@ -46,6 +46,8 @@
     <Compile Include="Native\AVCodec.cs" />
     <Compile Include="Native\AVDemuxerFlags.cs" />
     <Compile Include="Native\AVFormatContext.cs" />
+    <Compile Include="Native\AVIO.cs" />
+    <Compile Include="Native\AVIOOpenFlags.cs" />
     <Compile Include="Native\AVMuxerFlags.cs" />
     <Compile Include="BadAllocationException.cs" />
     <Compile Include="Dictionary.cs" />
@@ -57,12 +59,14 @@
     <Compile Include="Native\AVDictFlags.cs" />
     <Compile Include="Native\AVDictionary.cs" />
     <Compile Include="Native\AVFormat.cs" />
+    <Compile Include="Native\AVSeekFlags.cs" />
     <Compile Include="Native\AVUtil.cs" />
     <Compile Include="Native\FactoryEnumerable.cs" />
     <Compile Include="Native\MapEnumerator.cs" />
     <Compile Include="Native\Internalized.cs" />
     <Compile Include="Native\Ref.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamOpenMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen">

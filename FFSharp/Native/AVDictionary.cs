@@ -317,6 +317,7 @@ namespace FFSharp.Native
         /// <param name="AKey">The key string.</param>
         /// <param name="AValue">The value string.</param>
         /// <param name="AFlags">The <see cref="AVDictFlags"/>.</param>
+        /// <exception cref="FFmpegError">Error setting value.</exception>
         public static void Set(
             ref Ref<Unsafe.AVDictionary> ARef,
             [NotNull] string AKey,

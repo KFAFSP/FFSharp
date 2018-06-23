@@ -84,6 +84,7 @@ namespace FFSharp
         /// <summary>
         /// Get the name.
         /// </summary>
+        /// <exception cref="FFmpegException">Error getting name.</exception>
         [NotNull]
         public string Name => FName.Value;
         /// <summary>

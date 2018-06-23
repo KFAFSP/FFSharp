@@ -102,11 +102,13 @@ namespace FFSharp.Native
         /// <summary>
         /// Get the library configuration string.
         /// </summary>
+        /// <exception cref="FFmpegException">Error fetching configuration string.</exception>
         [NotNull]
         public static string Configuration => _FConfiguration.Value;
         /// <summary>
         /// Get the library license string.
         /// </summary>
+        /// <exception cref="FFmpegException">Error fetching license string.</exception>
         [NotNull]
         public static string License => _FLicense.Value;
         #endregion
