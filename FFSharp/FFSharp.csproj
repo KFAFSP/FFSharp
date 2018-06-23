@@ -41,10 +41,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BadAllocationException.cs" />
+    <Compile Include="Dictionary.cs" />
     <Compile Include="Disposable.cs" />
     <Compile Include="FFmpegError.cs" />
     <Compile Include="FFmpegHelper.cs" />
     <Compile Include="FFmpegException.cs" />
+    <Compile Include="Native\AVDictFlags.cs" />
+    <Compile Include="Native\AVDictionary.cs" />
+    <Compile Include="Native\MapEnumerator.cs" />
     <Compile Include="Native\Internalized.cs" />
     <Compile Include="Native\Ref.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
