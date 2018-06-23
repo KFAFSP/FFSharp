@@ -106,7 +106,8 @@ namespace FFSharp.Native
             // No null-check necessary.
 
             var ptr = ADst.Ptr;
-            var error = Unsafe.ffmpeg.av_dict_copy(&ptr, ASrc, (int) AFlags).CheckFFmpeg();
+            var error = Unsafe.ffmpeg.av_dict_copy(&ptr, ASrc, (int) AFlags)
+                .CheckFFmpeg("Error copying values.");
             ADst = ptr;
 
             // Postponed throw to make reference modification visible to caller at all costs.
@@ -228,7 +229,7 @@ namespace FFSharp.Native
                 &buffer,
                 AKeyValSep,
                 APairsSep
-            ).CheckFFmpeg().ThrowIfPresent();
+            ).CheckFFmpeg("Error building string.").ThrowIfPresent();
 
             // Marshalling copies the string, but the buffer must still be freed.
             var result = Marshal.PtrToStringAnsi((IntPtr) buffer);
@@ -303,7 +304,7 @@ namespace FFSharp.Native
                 AKeyValSep,
                 APairsSep,
                 (int)AFlags
-            ).CheckFFmpeg();
+            ).CheckFFmpeg("Error parsing string.");
             ARef = ptr;
 
             // Postponed throw to make reference modification visible to caller at all costs.
@@ -348,7 +349,8 @@ namespace FFSharp.Native
             AFlags &= ~C_ProhibitedFlags;
 
             var ptr = ARef.Ptr;
-            var error = Unsafe.ffmpeg.av_dict_set(&ptr, AKey, AValue, (int) AFlags).CheckFFmpeg();
+            var error = Unsafe.ffmpeg.av_dict_set(&ptr, AKey, AValue, (int) AFlags)
+                .CheckFFmpeg("Error setting value.");
             ARef = ptr;
 
             // Postponed throw to make reference modification visible to caller at all costs.

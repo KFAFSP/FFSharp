@@ -260,7 +260,7 @@ namespace FFSharp
                 clone.Clear();
                 throw;
             }
-            
+
             return clone;
         }
 

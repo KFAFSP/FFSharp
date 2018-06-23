@@ -22,7 +22,8 @@ namespace FFSharp.Native
         {
             // No null-check necessary.
 
-            var error = Unsafe.ffmpeg.avio_close(ARef).CheckFFmpeg();
+            var error = Unsafe.ffmpeg.avio_close(ARef)
+                .CheckFFmpeg("Error closing context.");
             ARef = null;
 
             Debug.Assert(
@@ -74,7 +75,7 @@ namespace FFSharp.Native
                 (int)AFlags,
                 AIntCb,
                 &opt
-            ).CheckFFmpeg();
+            ).CheckFFmpeg("Error opening context.");
 
             ARef = ptr;
             AOptions = opt;

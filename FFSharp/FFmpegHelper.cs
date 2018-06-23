@@ -13,14 +13,15 @@ namespace FFSharp
         /// Check an FFmpeg error code and create na <see cref="FFmpegError"/> if appropriate.
         /// </summary>
         /// <param name="ACode">The error code.</param>
+        /// <param name="AMessage">The custom message.</param>
         /// <returns>
         /// <see langword="null"/> if no error occured; otherwise an <see cref="FFmpegError"/>
         /// instance to throw.
         /// </returns>
         [MustUseReturnValue]
-        public static FFmpegError CheckFFmpeg(this int ACode)
+        public static FFmpegError CheckFFmpeg(this int ACode, [CanBeNull] string AMessage = null)
         {
-            return ACode < 0 ? new FFmpegError(ACode) : null;
+            return ACode < 0 ? new FFmpegError(AMessage, ACode) : null;
         }
 
         /// <summary>

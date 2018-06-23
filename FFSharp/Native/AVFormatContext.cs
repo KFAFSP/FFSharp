@@ -56,7 +56,8 @@ namespace FFSharp.Native
             );
 
             var opt = AOptions.Ptr;
-            var error = Unsafe.ffmpeg.avformat_find_stream_info(ARef, &opt).CheckFFmpeg();
+            var error = Unsafe.ffmpeg.avformat_find_stream_info(ARef, &opt)
+                .CheckFFmpeg("Error finding stream info.");
             AOptions = opt;
 
             // Postponed throw to make reference modification visible to caller at all costs.
@@ -73,6 +74,40 @@ namespace FFSharp.Native
 
             Unsafe.ffmpeg.avformat_free_context(ARef);
             ARef = null;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="Unsafe.AVStream"/> in the <see cref="Unsafe.AVFormatContext"/>.
+        /// </summary>
+        /// <param name="ARef">The <see cref="Unsafe.AVFormatContext"/>.</param>
+        /// <param name="ACodec">The <see cref="Unsafe.AVCodec"/>.</param>
+        /// <returns>The new <see cref="Unsafe.AVStream"/>.</returns>
+        /// <exception cref="FFmpegException">Error creating stream.</exception>
+        public static Ref<Unsafe.AVStream> NewStream(
+            Ref<Unsafe.AVFormatContext> ARef,
+            Ref<Unsafe.AVCodec> ACodec
+        )
+        {
+            Debug.Assert(
+                !ARef.IsNull,
+                "Ref is null.",
+                "The format context reference may not be null. This indicates a severe logic " +
+                "error in the code."
+            );
+            Debug.Assert(
+                !ACodec.IsNull,
+                "Codec is null.",
+                "The stream codec reference may not be null. This indicates a severe logic " +
+                "error in the code."
+            );
+
+            var stream = Unsafe.ffmpeg.avformat_new_stream(ARef, ACodec);
+            if (stream == null)
+            {
+                throw new FFmpegException("Error creating stream.");
+            }
+
+            return stream;
         }
 
         /// <summary>
@@ -100,7 +135,8 @@ namespace FFSharp.Native
 
             var ptr = ARef.Ptr;
             var opt = AOptions.Ptr;
-            var error = Unsafe.ffmpeg.avformat_open_input(&ptr, AUrl, AFormat, &opt).CheckFFmpeg();
+            var error = Unsafe.ffmpeg.avformat_open_input(&ptr, AUrl, AFormat, &opt)
+                .CheckFFmpeg("Error opening input.");
 
             ARef = ptr;
             AOptions = opt;
@@ -145,7 +181,7 @@ namespace FFSharp.Native
                 return false;
             }
 
-            code.CheckFFmpeg().ThrowIfPresent();
+            code.CheckFFmpeg("Error reading frame.").ThrowIfPresent();
             return true;
         }
 
@@ -188,7 +224,53 @@ namespace FFSharp.Native
             );
 
             Unsafe.ffmpeg.av_seek_frame(ARef, AStreamIndex, ATimestamp, (int)AFlags)
-                .CheckFFmpeg()
+                .CheckFFmpeg("Error seeking.")
+                .ThrowIfPresent();
+        }
+
+        /// <summary>
+        /// Initialize the output <see cref="Unsafe.AVFormatContext"/>.
+        /// </summary>
+        /// <param name="ARef">The <see cref="Unsafe.AVFormatContext"/>.</param>
+        /// <param name="AOptions">The options <see cref="Unsafe.AVDictionary"/>.</param>
+        /// <exception cref="FFmpegError">Error writing header.</exception>
+        public static void WriteHeader(
+            Ref<Unsafe.AVFormatContext> ARef,
+            ref Ref<Unsafe.AVDictionary> AOptions
+        )
+        {
+            Debug.Assert(
+                !ARef.IsNull,
+                "Ref is null.",
+                "The format context reference may not be null. This indicates a severe logic " +
+                "error in the code."
+            );
+
+            var opt = AOptions.Ptr;
+            var error = Unsafe.ffmpeg.avformat_write_header(ARef, &opt)
+                .CheckFFmpeg("Error writing header.");
+            AOptions = opt;
+
+            // Postponed throw to make reference modification visible to caller at all costs.
+            error.ThrowIfPresent();
+        }
+
+        /// <summary>
+        /// Finalize the output <see cref="Unsafe.AVFormatContext"/>.
+        /// </summary>
+        /// <param name="ARef">The <see cref="Unsafe.AVFormatContext"/>.</param>
+        /// <exception cref="FFmpegError">Error writing trailer.</exception>
+        public static void WriteTrailer(Ref<Unsafe.AVFormatContext> ARef)
+        {
+            Debug.Assert(
+                !ARef.IsNull,
+                "Ref is null.",
+                "The format context reference may not be null. This indicates a severe logic " +
+                "error in the code."
+            );
+
+            Unsafe.ffmpeg.av_write_trailer(ARef)
+                .CheckFFmpeg("Error writing trailer.")
                 .ThrowIfPresent();
         }
     }

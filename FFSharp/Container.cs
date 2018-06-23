@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
 
 using FFSharp.Native;
 
@@ -17,7 +13,7 @@ namespace FFSharp
     /// </summary>
     // ReSharper disable errors
     [PublicAPI]
-    public sealed class Container : Disposable
+    public abstract class Container : Disposable
     {
         /// <summary>
         /// Get the internal reference to the <see cref="Unsafe.AVFormatContext"/>.
@@ -31,6 +27,12 @@ namespace FFSharp
         /// <param name="AMode">The <see cref="StreamOpenMode"/>.</param>
         internal Container(Ref<Unsafe.AVFormatContext> ARef, StreamOpenMode AMode)
         {
+            Debug.Assert(
+                !ARef.IsNull,
+                "Ref is null.",
+                "This indicates a severe logic error in the code."
+            );
+
             Ref = ARef;
             Mode = AMode;
         }
@@ -38,7 +40,7 @@ namespace FFSharp
         /// Create a new <see cref="Container"/> instance.
         /// </summary>
         /// <exception cref="BadAllocationException">Error allocating context.</exception>
-        public Container()
+        internal Container()
             : this(AVFormatContext.Alloc(), StreamOpenMode.Closed)
         { }
 
@@ -83,78 +85,9 @@ namespace FFSharp
         }
 
         /// <summary>
-        /// Open an URL for input.
-        /// </summary>
-        /// <param name="AUrl">The input URL.</param>
-        /// <param name="ADemuxer">
-        /// The <see cref="Demuxer"/> to use, or <see langword="null"/> to use default.
-        /// </param>
-        /// <param name="AOptions">
-        /// The options <see cref="Dictionary"/>, or <see langword="null"/> to ignore.
-        /// </param>
-        /// <exception cref="ObjectDisposedException">This instance is disposed.</exception>
-        /// <exception cref="InvalidOperationException">Stream is already open.</exception>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="AUrl"/> is <see langword="null"/>.
-        /// </exception>
-        /// <exception cref="FFmpegError">Error opening container.</exception>
-        [ContractAnnotation("AUrl: null => halt")]
-        public void OpenInput(
-            string AUrl,
-            [CanBeNull] Demuxer ADemuxer = null,
-            [CanBeNull] Dictionary AOptions = null
-        )
-        {
-            ThrowIfDisposed();
-
-            if (Mode != StreamOpenMode.Closed)
-            {
-                throw new InvalidOperationException("Stream is already open.");
-            }
-
-            if (AUrl == null)
-            {
-                throw new ArgumentNullException(nameof(AUrl));
-            }
-
-            Ref<Unsafe.AVDictionary> opt = null;
-
-            // If options were provided, input them.
-            if (AOptions != null)
-            {
-                opt = AOptions.Ref;
-            }
-
-            try
-            {
-                AVFormatContext.OpenInput(
-                    ref Ref,
-                    AUrl,
-                    ADemuxer != null ? ADemuxer.Ref : null,
-                    ref opt
-                );
-
-                Mode = StreamOpenMode.Input;
-            }
-            finally
-            {
-                if (AOptions != null)
-                {
-                    // Options were provided, update them.
-                    AOptions.Ref = opt;
-                }
-                else
-                {
-                    // Options are unwanted, free them.
-                    AVDictionary.Free(ref opt);
-                }
-            }
-        }
-
-        /// <summary>
         /// Get the <see cref="StreamOpenMode"/>.
         /// </summary>
-        public StreamOpenMode Mode { get; private set; }
+        public StreamOpenMode Mode { get; protected set; }
     }
     // ReSharper restore errors
 }

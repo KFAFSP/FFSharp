@@ -43,6 +43,7 @@
     <Compile Include="Codec.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="Demuxer.cs" />
+    <Compile Include="InputContainer.cs" />
     <Compile Include="Native\AVCodec.cs" />
     <Compile Include="Native\AVDemuxerFlags.cs" />
     <Compile Include="Native\AVFormatContext.cs" />
@@ -65,8 +66,12 @@
     <Compile Include="Native\MapEnumerator.cs" />
     <Compile Include="Native\Internalized.cs" />
     <Compile Include="Native\Ref.cs" />
+    <Compile Include="OutputContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rational.cs" />
+    <Compile Include="Stream.cs" />
     <Compile Include="StreamOpenMode.cs" />
+    <Compile Include="StreamTime.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen">

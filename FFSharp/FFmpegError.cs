@@ -39,7 +39,7 @@ namespace FFSharp
         /// </summary>
         /// <param name="ACode">The FFmpeg error code.</param>
         internal FFmpegError(int ACode)
-            : this(null, ACode, GetDescription(ACode))
+            : this(null, ACode)
         { }
         /// <summary>
         /// Create a new <see cref="FFmpegError"/> instance with the specified error code and
@@ -47,7 +47,7 @@ namespace FFSharp
         /// </summary>
         /// <param name="AMessage">The custom error message.</param>
         /// <param name="ACode">The FFmpeg error code.</param>
-        internal FFmpegError([NotNull] string AMessage, int ACode)
+        internal FFmpegError(string AMessage, int ACode)
             : this(AMessage, ACode, GetDescription(ACode))
         { }
         FFmpegError(
