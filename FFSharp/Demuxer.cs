@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 using FFSharp.Native;
@@ -23,10 +24,18 @@ namespace FFSharp
         /// </summary>
         /// <param name="ARef">The <see cref="Unsafe.AVInputFormat"/>.</param>
         /// <returns>The internalized <see cref="Demuxer"/> instance.</returns>
-        internal Demuxer Of(Ref<Unsafe.AVInputFormat> ARef)
+        internal static Demuxer Of(Ref<Unsafe.AVInputFormat> ARef)
         {
             return Internalized<Unsafe.AVInputFormat, Demuxer>.Of(ARef, X => new Demuxer(X));
         }
+
+        /// <summary>
+        /// Get an <see cref="IEnumerable{T}"/> of all registered <see cref="Demuxer"/>s.
+        /// </summary>
+        [NotNull]
+        [ItemNotNull]
+        public static IEnumerable<Demuxer> Registered { get; } =
+            new FactoryEnumerable<Demuxer>(() => AVFormat.Demuxers.Select(Of).GetEnumerator());
 
         /// <summary>
         /// Get the internal reference to the <see cref="Unsafe.AVInputFormat"/>.

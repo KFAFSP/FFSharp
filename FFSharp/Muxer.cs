@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 using FFSharp.Native;
@@ -23,7 +24,7 @@ namespace FFSharp
         /// </summary>
         /// <param name="ARef">The <see cref="Unsafe.AVOutputFormat"/>.</param>
         /// <returns>The internalized <see cref="Muxer"/> instance.</returns>
-        internal Muxer Of(Ref<Unsafe.AVOutputFormat> ARef)
+        internal static Muxer Of(Ref<Unsafe.AVOutputFormat> ARef)
         {
             return Internalized<Unsafe.AVOutputFormat, Muxer>.Of(ARef, X => new Muxer(X));
         }
@@ -32,6 +33,14 @@ namespace FFSharp
         /// Get the internal reference to the <see cref="Unsafe.AVOutputFormat"/>.
         /// </summary>
         internal Ref<Unsafe.AVOutputFormat> Ref { get; }
+
+        /// <summary>
+        /// Get an <see cref="IEnumerable{T}"/> of all registered <see cref="Muxer"/>s.
+        /// </summary>
+        [NotNull]
+        [ItemNotNull]
+        public static IEnumerable<Muxer> Registered { get; } =
+            new FactoryEnumerable<Muxer>(() => AVFormat.Muxers.Select(Of).GetEnumerator());
 
         unsafe Muxer(Ref<Unsafe.AVOutputFormat> ARef)
         {
