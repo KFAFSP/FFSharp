@@ -17,31 +17,31 @@ namespace FFSharp.Native
         /// <summary>
         /// Match key case-sesnsitive.
         /// </summary>
-        AV_DICT_MATCH_CASE = 1,
+        AV_DICT_MATCH_CASE = FFmpeg.AutoGen.ffmpeg.AV_DICT_MATCH_CASE,
 
         /// <summary>
         /// Match until end of match instead of value.
         /// </summary>
-        AV_DICT_IGNORE_SUFFIX = 2,
+        AV_DICT_IGNORE_SUFFIX = FFmpeg.AutoGen.ffmpeg.AV_DICT_IGNORE_SUFFIX,
 
         /// <summary>
         /// Do not copy the key string, but still free it on error.
         /// </summary>
-        AV_DICT_DONT_STRDUP_KEY = 4,
+        AV_DICT_DONT_STRDUP_KEY = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_STRDUP_KEY,
 
         /// <summary>
         /// Do not copy the value string, but still free it on error.
         /// </summary>
-        AV_DICT_DONT_STRDUP_VAL = 8,
+        AV_DICT_DONT_STRDUP_VAL = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_STRDUP_VAL,
 
         /// <summary>
         /// Do not overwrite values that already exist.
         /// </summary>
-        AV_DICT_DONT_OVERWRITE = 16,
+        AV_DICT_DONT_OVERWRITE = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_OVERWRITE,
 
         /// <summary>
         /// Append to existing values instead of overwriting.
         /// </summary>
-        AV_DICT_APPEND = 32
+        AV_DICT_APPEND = FFmpeg.AutoGen.ffmpeg.AV_DICT_APPEND
     }
 }
