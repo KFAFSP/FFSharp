@@ -8,37 +8,19 @@ namespace FFSharp
     internal static class FFmpegHelper
     {
         /// <summary>
-        /// Check an FFmpeg error code and throw a <see cref="FFmpegError"/> if appropriate.
+        /// Check an FFmpeg error code and build a <see cref="FFmpegError"/> if unsuccessful.
         /// </summary>
         /// <param name="ACode">The error code.</param>
-        /// <exception cref="FFmpegError">Result code indicated an error.</exception>
-        public static void CheckFFmpeg(this int ACode)
+		/// <param name="AMessage">The custom error message, or <see langword="null"/>.</param>
+        /// <returns>
+		/// <see langword="null"/> on success;
+		/// otherwise the appropriate <see cref="FFmpegError"/> to throw.
+		/// </returns>
+        public static FFmpegError CheckFFmpeg(this int ACode, [CanBeNull] string AMessage = null)
         {
-            if (ACode < 0)
-            {
-                throw new FFmpegError(ACode);
-            }
+			return ACode < 0
+				? new FFmpegError(AMessage, ACode)
+				: null;
         }
-
-        /// <summary>
-        /// Check an allocated pointer and throw a <see cref="BadAllocationException"/> if
-        /// <see langword="null"/>.
-        /// </summary>
-        /// <typeparam name="T">The allocated type.</typeparam>
-        /// <param name="APtr">The allocated pointer.</param>
-        /// <returns>The checked non-<see langword="null"/> pointer.</returns>
-        // ReSharper disable errors
-        [NotNull]
-        public static unsafe T* CheckAlloc<T>(T* APtr)
-            where T : unmanaged
-        {
-            if (APtr == null)
-            {
-                throw new BadAllocationException(typeof(T));
-            }
-
-            return APtr;
-        }
-        // ReSharper restore errors
     }
 }

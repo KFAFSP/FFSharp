@@ -53,6 +53,9 @@ namespace FFSharp
             IsDisposed = ADisposed;
         }
 
+        /// <summary>
+        /// Finalize this instance, calling <see cref="Dispose(bool)"/>.
+        /// </summary>
         ~Disposable()
         {
             Dispose(false);
