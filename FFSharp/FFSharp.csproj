@@ -40,14 +40,21 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Demuxer.cs" />
+    <Compile Include="Native\AVDemuxerFlags.cs" />
+    <Compile Include="Native\AVMuxerFlags.cs" />
     <Compile Include="BadAllocationException.cs" />
     <Compile Include="Dictionary.cs" />
     <Compile Include="Disposable.cs" />
     <Compile Include="FFmpegError.cs" />
     <Compile Include="FFmpegHelper.cs" />
     <Compile Include="FFmpegException.cs" />
+    <Compile Include="Muxer.cs" />
     <Compile Include="Native\AVDictFlags.cs" />
     <Compile Include="Native\AVDictionary.cs" />
+    <Compile Include="Native\AVFormat.cs" />
+    <Compile Include="Native\AVUtil.cs" />
+    <Compile Include="Native\FactoryEnumerable.cs" />
     <Compile Include="Native\MapEnumerator.cs" />
     <Compile Include="Native\Internalized.cs" />
     <Compile Include="Native\Ref.cs" />
