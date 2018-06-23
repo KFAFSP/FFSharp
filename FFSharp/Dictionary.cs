@@ -13,6 +13,9 @@ using Unsafe = FFmpeg.AutoGen;
 
 namespace FFSharp
 {
+    /// <summary>
+    /// Represents a key-value dictionary used by FFmpeg.
+    /// </summary>
     // ReSharper disable errors
     [PublicAPI]
     public sealed class Dictionary :
@@ -182,6 +185,12 @@ namespace FFSharp
         : this(AIgnoreCase ? AVDictFlags.NONE : AVDictFlags.AV_DICT_MATCH_CASE)
         { }
 
+        /// <summary>
+        /// Finalize this instance.
+        /// </summary>
+        /// <remarks>
+        /// Instead of a dispose pattern, call the simpler <see cref="Clear()"/>.
+        /// </remarks>
         ~Dictionary()
         {
             Clear();

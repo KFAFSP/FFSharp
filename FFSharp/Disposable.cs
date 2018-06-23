@@ -53,6 +53,9 @@ namespace FFSharp
             IsDisposed = ADisposed;
         }
 
+        /// <summary>
+        /// Finalize this instance.
+        /// </summary>
         ~Disposable()
         {
             Dispose(false);
