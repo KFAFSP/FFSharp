@@ -41,9 +41,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Codec.cs" />
+    <Compile Include="Container.cs" />
     <Compile Include="Demuxer.cs" />
     <Compile Include="Native\AVCodec.cs" />
     <Compile Include="Native\AVDemuxerFlags.cs" />
+    <Compile Include="Native\AVFormatContext.cs" />
     <Compile Include="Native\AVMuxerFlags.cs" />
     <Compile Include="BadAllocationException.cs" />
     <Compile Include="Dictionary.cs" />
