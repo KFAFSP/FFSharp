@@ -179,23 +179,37 @@ namespace FFSharp
         /// Execute an <see cref="Action"/> if the <see cref="Result"/> is successful.
         /// </summary>
         /// <param name="AAction">The <see cref="Action"/> to execute.</param>
-        /// <returns>
-        /// <see langword="true"/> if <paramref name="AAction"/> was executed; otherwise
-        /// <see langword="false"/>.
-        /// </returns>
+        /// <returns>This <see cref="Result"/>.</returns>
         /// <remarks>
         /// Does not perform a <see langword="null"/>-check on <paramref name="AAction"/> and will
         /// fail if <paramref name="AAction"/> is <see langword="null"/> should it be executed.
         /// </remarks>
-        public bool IfSuccess([InstantHandle] [NotNull] Action AAction)
+        public Result OnSuccess([InstantHandle] [NotNull] Action AAction)
         {
             if (IsSuccess)
             {
                 AAction();
-                return true;
             }
 
-            return false;
+            return this;
+        }
+        /// <summary>
+        /// Execute an <see cref="Action"/> if the <see cref="Result"/> is erroneous.
+        /// </summary>
+        /// <param name="AAction">The <see cref="Action"/> to execute.</param>
+        /// <returns>This <see cref="Result"/>.</returns>
+        /// <remarks>
+        /// Does not perform a <see langword="null"/>-check on <paramref name="AAction"/> and will
+        /// fail if <paramref name="AAction"/> is <see langword="null"/> should it be executed.
+        /// </remarks>
+        public Result OnError([InstantHandle] [NotNull] Action<Exception> AAction)
+        {
+            if (IsSuccess)
+            {
+                AAction(Error);
+            }
+
+            return this;
         }
         /// <summary>
         /// Compute a <see cref="Func{TResult}"/> if the <see cref="Result"/> is successful.
@@ -421,23 +435,37 @@ namespace FFSharp
         /// Execute an <see cref="Action{T}"/> if the <see cref="Result{T}"/> is successful.
         /// </summary>
         /// <param name="AAction">The <see cref="Action{T}"/> to execute.</param>
-        /// <returns>
-        /// <see langword="true"/> if <paramref name="AAction"/> was executed; otherwise
-        /// <see langword="false"/>.
-        /// </returns>
+        /// <returns>This <see cref="Result{T}"/>.</returns>
         /// <remarks>
         /// Does not perform a <see langword="null"/>-check on <paramref name="AAction"/> and will
         /// fail if <paramref name="AAction"/> is <see langword="null"/> should it be executed.
         /// </remarks>
-        public bool IfSuccess([InstantHandle] [NotNull] Action<T> AAction)
+        public Result<T> OnSuccess([InstantHandle] [NotNull] Action<T> AAction)
         {
             if (IsSuccess)
             {
                 AAction(Unbox);
-                return true;
             }
 
-            return false;
+            return this;
+        }
+        /// <summary>
+        /// Execute an <see cref="Action"/> if the <see cref="Result{T}"/> is erroneous.
+        /// </summary>
+        /// <param name="AAction">The <see cref="Action"/> to execute.</param>
+        /// <returns>This <see cref="Result{T}"/>.</returns>
+        /// <remarks>
+        /// Does not perform a <see langword="null"/>-check on <paramref name="AAction"/> and will
+        /// fail if <paramref name="AAction"/> is <see langword="null"/> should it be executed.
+        /// </remarks>
+        public Result<T> OnError([InstantHandle] [NotNull] Action<Exception> AAction)
+        {
+            if (IsSuccess)
+            {
+                AAction(Error);
+            }
+
+            return this;
         }
         /// <summary>
         /// Apply a <see cref="Func{T, TResult}"/> if the <see cref="Result{T}"/> is successful.
