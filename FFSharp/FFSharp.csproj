@@ -48,6 +48,7 @@
     <Compile Include="Native\Movable.cs" />
     <Compile Include="Native\Fixed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Result.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen">
