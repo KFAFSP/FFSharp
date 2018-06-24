@@ -197,6 +197,26 @@ namespace FFSharp
 
             return false;
         }
+        /// <summary>
+        /// Compute a <see cref="Func{TResult}"/> if the <see cref="Result"/> is successful.
+        /// </summary>
+        /// <typeparam name="TResult">The result value type.</typeparam>
+        /// <param name="AFunc">The <see cref="Func{TResult}"/> to apply.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> wrapping the result of executing <paramref name="AFunc"/>, or
+        /// an erroneous <see cref="Result{T}"/> carrying the error of this <see cref="Result"/>.
+        /// </returns>
+        /// <remarks>
+        /// Does not perform a <see langword="null"/>-check on <paramref name="AFunc"/> and will
+        /// fail if <paramref name="AFunc"/> is <see langword="null"/> should it be executed.
+        /// </remarks>
+        [MustUseReturnValue]
+        public Result<TResult> AndThen<TResult>([InstantHandle] [NotNull] Func<TResult> AFunc)
+        {
+            return IsSuccess
+                ? new Result<TResult>(AFunc())
+                : new Result<TResult>(FError ?? UninitializedError);
+        }
         #endregion
 
         /// <summary>
@@ -422,7 +442,7 @@ namespace FFSharp
         /// <summary>
         /// Apply a <see cref="Func{T, TResult}"/> if the <see cref="Result{T}"/> is successful.
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TResult">The result value type.</typeparam>
         /// <param name="AFunc">The <see cref="Func{T, TResult}"/> to apply.</param>
         /// <returns>
         /// A <see cref="Result{T}"/> wrapping the result of applying <paramref name="AFunc"/> to
