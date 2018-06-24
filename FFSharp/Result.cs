@@ -298,7 +298,7 @@ namespace FFSharp
         /// Implicitly initalize an erroneous <see cref="Result{T}"/>.
         /// </summary>
         /// <param name="AError">The error.</param>
-        public static implicit operator Result<T>(Exception AError) => Result.Fail<T>(AError);
+        public static implicit operator Result<T>(Exception AError) => new Result<T>(AError);
         /// <summary>
         /// Explicitly unpack the <see cref="Value"/> of a <see cref="Result{T}"/>.
         /// </summary>
