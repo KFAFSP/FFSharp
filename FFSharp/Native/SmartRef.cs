@@ -62,9 +62,9 @@ namespace FFSharp.Native
             if (IsOwning)
             {
                 Marshal.FreeHGlobal(Movable);
-                Movable = Movable<T>.Absent;
             }
 
+            Movable = Movable<T>.Absent;
             base.Dispose(ADisposing);
         }
         #endregion
