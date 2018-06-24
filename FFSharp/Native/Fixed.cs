@@ -41,7 +41,7 @@ namespace FFSharp.Native
     /// check contracts.
     /// </remarks>
     // ReSharper disable errors
-    internal unsafe struct Fixed<T> :
+    internal readonly unsafe struct Fixed<T> :
         IEquatable<Fixed<T>>
         where T : unmanaged
     {
