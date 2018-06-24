@@ -229,6 +229,16 @@ namespace FFSharp.Native
         /// <param name="AFixed">The <see cref="Fixed{T}"/>.</param>
         [CanBeNull]
         public static implicit operator T*(Fixed<T> AFixed) => AFixed.Raw;
+        /// <summary>
+        /// Implicitly convert an <see cref="IntPtr"/> to a <see cref="Fixed{T}"/>.
+        /// </summary>
+        /// <param name="AAddress">The address.</param>
+        public static implicit operator Fixed<T>(IntPtr AAddress) => new Fixed<T>((T*)AAddress);
+        /// <summary>
+        /// Implicitly convert a <see cref="Fixed{T}"/> to it's <see cref="Address"/>.
+        /// </summary>
+        /// <param name="AFixed">The <see cref="Fixed{T}"/>.</param>
+        public static implicit operator IntPtr(Fixed<T> AFixed) => AFixed.Address;
 
         /// <summary>
         /// Perform <see cref="Or(Fixed{T})"/> on two <see cref="Fixed{T}"/> instances.

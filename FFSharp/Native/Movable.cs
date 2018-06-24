@@ -271,7 +271,18 @@ namespace FFSharp.Native
         /// </summary>
         /// <param name="AMovable">The <see cref="Movable{T}"/>.</param>
         [CanBeNull]
-        public static implicit operator T** (Movable<T> AMovable) => AMovable.Raw;
+        public static implicit operator T**(Movable<T> AMovable) => AMovable.Raw;
+        /// <summary>
+        /// Implicitly convert an <see cref="IntPtr"/> to a <see cref="Movable{T}"/>.
+        /// </summary>
+        /// <param name="AAddress">The address.</param>
+        public static implicit operator Movable<T>(IntPtr AAddress)
+            => new Movable<T>((T**)AAddress);
+        /// <summary>
+        /// Implicitly convert a <see cref="Movable{T}"/> to it's <see cref="Address"/>.
+        /// </summary>
+        /// <param name="AMovable">The <see cref="Movable{T}"/>.</param>
+        public static implicit operator IntPtr(Movable<T> AMovable) => AMovable.Address;
         #endregion
     }
     // ReSharper restore errors

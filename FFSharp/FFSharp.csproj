@@ -49,6 +49,7 @@
     <Compile Include="Native\AVDictionaryFlags.cs" />
     <Compile Include="Native\Movable.cs" />
     <Compile Include="Native\Fixed.cs" />
+    <Compile Include="Native\SmartRef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Result.cs" />
   </ItemGroup>
