@@ -29,11 +29,11 @@ namespace FFSharp
         /// Indicates an appropriate error if <paramref name="ACode"/> is less than 0.
         /// </remarks>
         [MustUseReturnValue]
-        public static Result<int> CheckFFmpeg(this int ACode, [CanBeNull] string AMessage = null)
+        public static Result CheckFFmpeg(this int ACode, [CanBeNull] string AMessage = null)
         {
 			return ACode < 0
-				? new Result<int>(new FFmpegError(AMessage, ACode))
-				: new Result<int>(ACode);
+				? new Result(new FFmpegError(AMessage, ACode))
+				: Result.Ok();
         }
 
         /// <summary>
