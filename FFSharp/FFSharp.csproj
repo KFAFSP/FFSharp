@@ -45,6 +45,7 @@
     <Compile Include="FFmpegError.cs" />
     <Compile Include="FFmpegHelper.cs" />
     <Compile Include="FFmpegException.cs" />
+    <Compile Include="Native\AVDictionaryFlags.cs" />
     <Compile Include="Native\Movable.cs" />
     <Compile Include="Native\Fixed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
