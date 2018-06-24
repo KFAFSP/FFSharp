@@ -8,10 +8,14 @@ using JetBrains.Annotations;
 namespace FFSharp
 {
     /// <summary>
-    /// Non-generic helper class for the <see cref="Result{T}"/> struct.
+    /// Safely wraps a successful result or an <see cref="Exception"/> instead.
     /// </summary>
+    /// <remarks>
+    /// Value-less variant of the <see cref="Result{T}"/> struct.
+    /// </remarks>
     [PublicAPI]
-    public static class Result
+    public readonly struct Result :
+        IEquatable<Result>
     {
         const string C_Message = "An uninitialized result was returned.";
         /// <summary>
@@ -20,6 +24,7 @@ namespace FFSharp
         /// </summary>
         public static Exception UninitializedError => new Exception(C_Message);
 
+        #region Generic factories
         /// <summary>
         /// Initialize a successful <see cref="Result{T}"/>.
         /// </summary>
@@ -28,6 +33,7 @@ namespace FFSharp
         /// <returns>
         /// A successful <see cref="Result{T}"/> wrapping <paramref name="AValue"/>.
         /// </returns>
+        [Pure]
         public static Result<T> Ok<T>(T AValue)
         {
             return new Result<T>(AValue);
@@ -43,6 +49,7 @@ namespace FFSharp
         /// <exception cref="ArgumentNullException">
         /// <paramref name="AError"/> is <see langword="null"/>.
         /// </exception>
+        [Pure]
         public static Result<T> Fail<T>(Exception AError)
         {
             if (AError == null)
@@ -52,10 +59,204 @@ namespace FFSharp
 
             return new Result<T>(AError);
         }
+        #endregion
+
+        #region Value-less factories
+        /// <summary>
+        /// Initialize a successful <see cref="Result"/>.
+        /// </summary>
+        /// <returns>The successful <see cref="Result"/>.</returns>
+        [Pure]
+        public static Result Ok()
+        {
+            return new Result(true);
+        }
+        /// <summary>
+        /// Initialize an erroneous <see cref="Result"/>.
+        /// </summary>
+        /// <param name="AError">The error.</param>
+        /// <returns>
+        /// An erroneous <see cref="Result"/> wrapping <paramref name="AError"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="AError"/> is <see langword="null"/>.
+        /// </exception>
+        [Pure]
+        public static Result Fail(Exception AError)
+        {
+            if (AError == null)
+            {
+                throw new ArgumentNullException(nameof(AError));
+            }
+
+            return new Result(AError);
+        }
+        #endregion
+
+        /// <summary>
+        /// Get a value indicating whether this <see cref="Result{T}"/> is successful.
+        /// </summary>
+        public bool IsSuccess { get; }
+        [CanBeNull]
+        readonly Exception FError;
+
+        /// <summary>
+        /// Initialize a successful <see cref="Result"/>.
+        /// </summary>
+        /// <param name="AIgnored">Ignored.</param>
+        internal Result(bool AIgnored)
+        {
+            IsSuccess = true;
+            FError = default;
+        }
+        /// <summary>
+        /// Initialize an erroneous <see cref="Result"/>.
+        /// </summary>
+        /// <param name="AError">The error.</param>
+        internal Result([NotNull] Exception AError)
+        {
+            Debug.Assert(
+                AError != null,
+                "Error is null.",
+                "This indicates a contract violation."
+            );
+
+            IsSuccess = false;
+            FError = AError;
+        }
+
+        #region IEquatable<Result>
+        /// <inheritdoc/>
+        public bool Equals(Result AOther)
+        {
+            return IsSuccess == AOther.IsSuccess;
+        }
+        #endregion
+
+        #region System.Object overrides
+        /// <inheritdoc/>
+        public override bool Equals(object AObject)
+        {
+            switch (AObject)
+            {
+            case Result result:
+                return Equals(result);
+
+            default:
+                return false;
+            }
+        }
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return IsSuccess ? 0 : 1;
+        }
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return IsSuccess
+                ? $"<Error: {Error}>"
+                : "<Success>";
+        }
+        #endregion
+
+        /// <summary>
+        /// Throw the contained <see cref="Exception"/> if this <see cref="Result"/> is
+        /// erroneous.
+        /// </summary>
+        [DebuggerHidden]
+        public void ThrowIfError()
+        {
+            if (!IsSuccess)
+            {
+                Debug.Assert(Error != null);
+                throw Error;
+            }
+        }
+
+        #region Convenience
+        /// <summary>
+        /// Execute an <see cref="Action"/> if the <see cref="Result"/> is successful.
+        /// </summary>
+        /// <param name="AAction">The <see cref="Action"/> to execute.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="AAction"/> was executed; otherwise
+        /// <see langword="false"/>.
+        /// </returns>
+        /// <remarks>
+        /// Does not perform a <see langword="null"/>-check on <paramref name="AAction"/> and will
+        /// fail if <paramref name="AAction"/> is <see langword="null"/> should it be executed.
+        /// </remarks>
+        public bool IfSuccess([InstantHandle] [NotNull] Action AAction)
+        {
+            if (IsSuccess)
+            {
+                AAction();
+                return true;
+            }
+
+            return false;
+        }
+        #endregion
+
+        /// <summary>
+        /// Get the <see cref="Exception"/> wrapped in this <see cref="Result"/>.
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="IsSuccess"/> is <see langword="true"/>, this will always be
+        /// <see langword="null"/>, otherwise it is guaranteed to be non-<see langword="null"/>.
+        /// </remarks>
+        [CanBeNull]
+        public Exception Error => IsSuccess ? null : FError ?? UninitializedError;
+
+        #region Operator overloads
+        /// <summary>
+        /// Compare two <see cref="Result"/>s for equality.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if both are the same <see cref="IsSuccess"/> state; otherwise
+        /// <see langword="false"/>.
+        /// </returns>
+        public static bool operator ==(Result ALhs, Result ARhs) => ALhs.Equals(ARhs);
+        /// <summary>
+        /// Compare two <see cref="Result"/>s for inequality.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if both have a different <see cref="IsSuccess"/> state; otherwise
+        /// <see langword="false"/>.
+        /// </returns>
+        public static bool operator !=(Result ALhs, Result ARhs) => !ALhs.Equals(ARhs);
+
+        /// <summary>
+        /// Implicitly convert a <see cref="Result"/> to it's <see cref="IsSuccess"/>.
+        /// </summary>
+        /// <param name="AResult">The <see cref="Result"/>.</param>
+        public static implicit operator bool(Result AResult) => AResult.IsSuccess;
+
+        /// <summary>
+        /// Implicitly initialize a successful <see cref="Result"/>.
+        /// </summary>
+        /// <param name="ASuccess">The success value.</param>
+        public static implicit operator Result(bool ASuccess) => ASuccess ? Ok() : new Result();
+        /// <summary>
+        /// Implicitly initalize an erroneous <see cref="Result"/>.
+        /// </summary>
+        /// <param name="AError">The error.</param>
+        public static implicit operator Result(Exception AError) => new Result(AError);
+        /// <summary>
+        /// Implicitly convert a <see cref="Result"/> to it's <see cref="Error"/>.
+        /// </summary>
+        /// <param name="AResult">The <see cref="Result"/>.</param>
+        public static implicit operator Exception(Result AResult) => AResult.Error;
+        #endregion
     }
 
     /// <summary>
-    /// Safely wraps a successful result or an <see cref="Exception"/> instead.
+    /// Safely wraps a successful result value or an <see cref="Exception"/> instead.
     /// </summary>
     /// <typeparam name="T">The successful value type.</typeparam>
     /// <remarks>
@@ -100,6 +301,12 @@ namespace FFSharp
         /// <param name="AError">The error.</param>
         internal Result([NotNull] Exception AError)
         {
+            Debug.Assert(
+                AError != null,
+                "Error is null.",
+                "This indicates a contract violation."
+            );
+
             IsSuccess = false;
             FBox = default;
             FError = AError;
@@ -148,7 +355,7 @@ namespace FFSharp
         {
             return IsSuccess
                 ? $"<Error: {Error}>"
-                : $"<Success: {Unbox}";
+                : $"<Success: {Unbox}>";
         }
         #endregion
 
@@ -250,7 +457,7 @@ namespace FFSharp
             }
         }
         /// <summary>
-        /// Get the <see cref="Exception"/> wrapped in this <see cref="Result"/>.
+        /// Get the <see cref="Exception"/> wrapped in this <see cref="Result{T}"/>.
         /// </summary>
         /// <remarks>
         /// If <see cref="IsSuccess"/> is <see langword="true"/>, this will always be
