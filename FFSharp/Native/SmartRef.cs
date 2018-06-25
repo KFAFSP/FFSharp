@@ -74,6 +74,7 @@ namespace FFSharp.Native
         {
             IsOwning = true;
             Movable = Marshal.AllocHGlobal(sizeof(void*));
+            FCleanup = ACleanup;
         }
         /// <summary>
         /// Create a shared <see cref="SmartRef{T}"/>.
