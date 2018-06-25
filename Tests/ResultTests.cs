@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using NUnit.Framework;
 
@@ -17,24 +13,28 @@ namespace FFSharp
     public class ResultTests
     {
         [Test]
+        [Description("Ok returns a successful result.")]
         public void Ok_IsSuccess()
         {
             Assert.That(Result.Ok().IsSuccess);
         }
 
         [Test]
+        [Description("Fail with null throws an ArgumentNullException.")]
         public void Fail_Null_Throws_ArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => Result.Fail(null));
         }
 
         [Test]
+        [Description("Fail with Exception wraps that Exception.")]
         public void Fail_NotNull_IsError()
         {
             Assert.That(!Result.Fail(Result.UninitializedError).IsSuccess);
         }
 
         [Test]
+        [Description("Default initialized is an error.")]
         public void Default_IsError()
         {
             Result result = default;
@@ -42,6 +42,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Equality is upheld.")]
         public void Equality()
         {
             Result def = default;
@@ -62,12 +63,14 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("ThrowIfError on OK does nothing.")]
         public void ThrowIfError_Ok_NoOperation()
         {
             Assert.DoesNotThrow(() => Result.Ok().ThrowIfError());
         }
 
         [Test]
+        [Description("ThrowIfError on error throws that error.")]
         public void ThrowIfError_Error_ThrowsContained()
         {
             var error = new Exception();
@@ -77,6 +80,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnSuccess on OK is executed.")]
         public void OnSuccess_Ok_IsExecuted()
         {
             var executed = false;
@@ -86,6 +90,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnSuccess on error is not executed.")]
         public void OnSuccess_Error_NoOperation()
         {
             var executed = false;
@@ -95,6 +100,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnSuccess propagates no matter what.")]
         public void OnSuccess_Propagates()
         {
             var ok = Result.Ok();
@@ -105,6 +111,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnError on OK does nothing.")]
         public void OnError_Ok_NoOperation()
         {
             var executed = false;
@@ -114,6 +121,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnError on error is executed on that error.")]
         public void OnError_Error_IsExecuted()
         {
             var error = new Exception();
@@ -128,6 +136,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("OnError propagates no matter what.")]
         public void OnError_Propagates()
         {
             var ok = Result.Ok();
@@ -138,6 +147,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("AndThen on error propagates that error.")]
         public void AndThen_Error_Propagates()
         {
             var err = Result.Fail(new Exception());
@@ -146,6 +156,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("AndThen on success wraps the result.")]
         public void AndThen_Success_Wraps()
         {
             var ok = Result.Ok();
@@ -154,12 +165,14 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Error of OK is null.")]
         public void Error_Ok_IsNull()
         {
             Assert.That(Result.Ok().Error, Is.Null);
         }
 
         [Test]
+        [Description("Error of error is that error.")]
         public void Error_Error_IsError()
         {
             var error = new Exception();
@@ -167,6 +180,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Error of default initialized is not null.")]
         public void Error_Default_IsNotNull()
         {
             Result result = default;
@@ -174,18 +188,21 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Implicit conversion to bool of error is false.")]
         public void ImplicitToBool_Error_IsFalse()
         {
             Assert.That(!Result.Fail(Result.UninitializedError));
         }
 
         [Test]
+        [Description("Implicit conversion to bool of OK is true.")]
         public void ImplicitToBool_Ok_IsTrue()
         {
             Assert.That(Result.Ok());
         }
 
         [Test]
+        [Description("Implicit conversion from bool of true is success.")]
         public void ImplicitFromBool_True_IsOk()
         {
             Result result = true;
@@ -193,6 +210,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Implicit conversion from bool of false is default initialized.")]
         public void ImplicitFromBool_False_IsError()
         {
             Result result = false;
@@ -200,6 +218,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Implicit conversion from exception that is not null is that error.")]
         public void ImplicitFromException_NotNull_IsError()
         {
             Result result = Result.UninitializedError;
@@ -207,6 +226,7 @@ namespace FFSharp
         }
 
         [Test]
+        [Description("Implicit conversion from exception that is null is OK.")]
         public void ImplicitFromException_Null_IsOk()
         {
             Result result = (Exception)null;
