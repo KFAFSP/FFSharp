@@ -129,7 +129,7 @@ namespace FFSharp
         /// <inheritdoc/>
         public bool Equals(Result AOther)
         {
-            return IsSuccess == AOther.IsSuccess;
+            return IsSuccess && AOther.IsSuccess || Error == AOther.Error;
         }
         #endregion
 
@@ -204,7 +204,7 @@ namespace FFSharp
         /// </remarks>
         public Result OnError([InstantHandle] [NotNull] Action<Exception> AAction)
         {
-            if (IsSuccess)
+            if (!IsSuccess)
             {
                 AAction(Error);
             }
@@ -275,12 +275,13 @@ namespace FFSharp
         /// Implicitly initialize a successful <see cref="Result"/>.
         /// </summary>
         /// <param name="ASuccess">The success value.</param>
-        public static implicit operator Result(bool ASuccess) => ASuccess ? Ok() : new Result();
+        public static implicit operator Result(bool ASuccess) => ASuccess ? Ok() : default;
         /// <summary>
         /// Implicitly initalize an erroneous <see cref="Result"/>.
         /// </summary>
         /// <param name="AError">The error.</param>
-        public static implicit operator Result(Exception AError) => new Result(AError);
+        public static implicit operator Result(Exception AError)
+            => AError == null ? Ok() : new Result(AError);
         /// <summary>
         /// Implicitly convert a <see cref="Result"/> to it's <see cref="Error"/>.
         /// </summary>
