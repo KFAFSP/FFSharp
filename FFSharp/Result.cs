@@ -301,7 +301,8 @@ namespace FFSharp
     [PublicAPI]
     public readonly struct Result<T> :
         IEnumerable<T>,
-        IEquatable<T>
+        IEquatable<T>,
+        IEquatable<Result<T>>
     {
         /// <summary>
         /// Get a value indicating whether this <see cref="Result{T}"/> is successful.
@@ -367,6 +368,21 @@ namespace FFSharp
         }
         #endregion
 
+        #region
+        /// <inheritdoc/>
+        public bool Equals(Result<T> AOther)
+        {
+            if (IsSuccess)
+            {
+                return AOther.IsSuccess
+                       && EqualityComparer<T>.Default.Equals(Unbox, AOther.Unbox);
+            }
+
+            return !AOther.IsSuccess
+                   && Error == AOther.Error;
+        }
+        #endregion
+
         #region System.Object overrides
         /// <inheritdoc/>
         public override bool Equals(object AObject)
@@ -375,6 +391,9 @@ namespace FFSharp
             {
                 case T value:
                     return Equals(value);
+
+                case Result<T> result:
+                    return Equals(result);
 
                 default:
                     return false;
@@ -461,7 +480,7 @@ namespace FFSharp
         /// </remarks>
         public Result<T> OnError([InstantHandle] [NotNull] Action<Exception> AAction)
         {
-            if (IsSuccess)
+            if (!IsSuccess)
             {
                 AAction(Error);
             }
@@ -517,6 +536,27 @@ namespace FFSharp
 
         #region Operator overloads
         /// <summary>
+        /// Compare two <see cref="Result{T}"/>s for equality.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if both are successful and wrap the same value, or both are
+        /// erroneous and wrap the same error.
+        /// </returns>
+        public static bool operator ==(Result<T> ALhs, Result<T> ARhs) => ALhs.Equals(ARhs);
+        /// <summary>
+        /// Compare two <see cref="Result{T}"/>s for inequality.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if the results indicate a different state, value or error;
+        /// otherwise <see langword="false"/>.
+        /// </returns>
+        public static bool operator !=(Result<T> ALhs, Result<T> ARhs) => !ALhs.Equals(ARhs);
+
+        /// <summary>
         /// Compare a <see cref="Result{T}"/> and a value for equality.
         /// </summary>
         /// <param name="ALhs">The left hand side.</param>
@@ -554,7 +594,7 @@ namespace FFSharp
         /// Implicitly initalize an erroneous <see cref="Result{T}"/>.
         /// </summary>
         /// <param name="AError">The error.</param>
-        public static implicit operator Result<T>(Exception AError) => new Result<T>(AError);
+        public static implicit operator Result<T>(Exception AError) => Result.Fail<T>(AError);
         /// <summary>
         /// Explicitly unpack the <see cref="Value"/> of a <see cref="Result{T}"/>.
         /// </summary>
