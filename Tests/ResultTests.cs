@@ -232,5 +232,18 @@ namespace FFSharp
             Result result = (Exception)null;
             Assert.That(result.IsSuccess);
         }
+
+        [Test]
+        [Description("Implicit conversion to exception is Error.")]
+        public void ImplicitToException_IsError()
+        {
+            var error = new Exception();
+
+            Exception ok = Result.Ok();
+            Exception err = Result.Fail(error);
+
+            Assert.That(ok, Is.Null);
+            Assert.That(err, Is.SameAs(error));
+        }
     }
 }
