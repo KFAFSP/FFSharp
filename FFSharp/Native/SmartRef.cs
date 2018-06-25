@@ -1,5 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+using JetBrains.Annotations;
 
 namespace FFSharp.Native
 {
@@ -8,14 +12,45 @@ namespace FFSharp.Native
     /// </summary>
     /// <typeparam name="T">The pointed-to struct type.</typeparam>
     /// <remarks>
+    /// <para>
     /// This class decouples the problem of ownership management from any managed implementation by
     /// allowing both referencing a movable pointer with shared access from unmanaged code whilst
     /// providing a way to create such a reference from the CLR side.
+    /// </para>
+    /// <para>
+    /// For owning <see cref="SmartRef{T}"/> instances a cleanup <see cref="Action{T}"/> may be
+    /// supplied which is invoked on cleanup. This action must not throw as it is also run in the
+    /// finalizer if necessary!
+    /// </para>
+    /// <para>
+    /// To use <see cref="SmartRef{T}"/> properly, the following things should be noted:
+    /// <list type="bullet">
+    /// <item><description>
+    /// Any holder of <see cref="SmartRef{T}"/> must derive from <see cref="IDisposable"/> and
+    /// cease all use of the reference on <see cref="IDisposable.Dispose()"/> which will be called
+    /// when the <see cref="SmartRef{T}"/> ceases to exist because of outside interference.
+    /// </description></item>
+    /// <item><description>
+    /// Any holder of <see cref="SmartRef{T}"/> must call
+    /// <see cref="SmartRef{T}.Acquire(IDisposable)"/> when it initially gets the
+    /// <see cref="SmartRef{T}"/> to indicate it's usage of it. When the holder is disposed, it
+    /// should call <see cref="SmartRef{T}.Release(IDisposable)"/> to signal that it no longer needs
+    /// to be informed of the reference's death.
+    /// </description></item>
+    /// <item><description>
+    /// Any holder of <see cref="SmartRef{T}"/> shall keep the reference to the object around as
+    /// long as it is needed and unroot it once it is no longer needed to allow it to be garbage-
+    /// collected.
+    /// </description></item>
+    /// </list>
+    /// </para>
     /// </remarks>
     // ReSharper disable errors
     internal unsafe class SmartRef<T> : Disposable
         where T : unmanaged
     {
+        [CanBeNull]
+        Action<Movable<T>> FCleanup;
         /// <summary>
         /// Get a value indicating whether this <see cref="SmartRef{T}"/> is owning.
         /// </summary>
@@ -33,8 +68,9 @@ namespace FFSharp.Native
         /// <summary>
         /// Create an owning <see cref="SmartRef{T}"/>.
         /// </summary>
+        /// <param name="ACleanup">A cleanup <see cref="Action{T}"/>.</param>
         /// <exception cref="OutOfMemoryException">No more memory.</exception>
-        SmartRef()
+        public SmartRef([CanBeNull] Action<Movable<T>> ACleanup = null)
         {
             IsOwning = true;
             Movable = Marshal.AllocHGlobal(sizeof(void*));
@@ -43,12 +79,12 @@ namespace FFSharp.Native
         /// Create a shared <see cref="SmartRef{T}"/>.
         /// </summary>
         /// <param name="AShared">The shared <see cref="Movable{T}"/>.</param>
-        SmartRef(Movable<T> AShared)
+        public SmartRef(Movable<T> AShared)
         {
             Debug.Assert(
                 AShared.IsNotNull,
                 "Shared is null.",
-                "This indicates a contract validation."
+                "This indicates a contract violation."
             );
 
             IsOwning = false;
@@ -61,11 +97,91 @@ namespace FFSharp.Native
         {
             if (IsOwning)
             {
+                FCleanup?.Invoke(Movable);
                 Marshal.FreeHGlobal(Movable);
             }
 
             Movable = Movable<T>.Absent;
+
+            if (ADisposing)
+            {
+                PropagateDispose();
+            }
+
             base.Dispose(ADisposing);
+        }
+        #endregion
+
+        #region Weak event pattern
+        [NotNull]
+        readonly List<WeakReference<IDisposable>> FReferences =
+            new List<WeakReference<IDisposable>>();
+
+        void PropagateDispose()
+        {
+            // This will speed up the Release() calls that will happen now.
+            var refs = FReferences.ToArray();
+            FReferences.Clear();
+
+            foreach (var weakRef in FReferences)
+            {
+                if (weakRef.TryGetTarget(out var target))
+                {
+                    target.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Acquire a reference to this <see cref="Movable{T}"/>.
+        /// </summary>
+        /// <param name="ADisposable">The acquiring <see cref="IDisposable"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if a reference was acquired; otherwise <see langword="false"/>.
+        /// </returns>
+        public bool Acquire([NotNull] IDisposable ADisposable)
+        {
+            Debug.Assert(
+                ADisposable != null,
+                "Disposable is null.",
+                "This indicates a contract violation."
+            );
+
+            if (Movable.IsAbsent)
+            {
+                return false;
+            }
+
+            FReferences.Add(new WeakReference<IDisposable>(ADisposable));
+            return true;
+        }
+        /// <summary>
+        /// Release an acquired reference to this <see cref="Movable{T}"/>.
+        /// </summary>
+        /// <param name="ADisposable">The releasing <see cref="IDisposable"/>.</param>
+        public void Release([NotNull] IDisposable ADisposable)
+        {
+            Debug.Assert(
+                ADisposable != null,
+                "Disposable is null.",
+                "This indicates a contract violation."
+            );
+
+            for (int I = 0; I < FReferences.Count; ++I)
+            {
+                if (!FReferences[I].TryGetTarget(out var target))
+                {
+                    FReferences.RemoveAt(I);
+                    --I;
+                    continue;
+                }
+
+                if (ReferenceEquals(target, ADisposable))
+                {
+                    FReferences.RemoveAt(I);
+                    return;
+                }
+            }
         }
         #endregion
     }

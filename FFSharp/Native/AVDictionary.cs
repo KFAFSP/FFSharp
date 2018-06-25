@@ -327,6 +327,31 @@ namespace FFSharp.Native
             return Unsafe.ffmpeg.av_dict_set(ADict, AKey, AValue, (int)AFlags)
                 .CheckFFmpeg("Error setting value.");
         }
+
+        /// <summary>
+        /// Convert a <see cref="Unsafe.AVDictionaryEntry"/> to a
+        /// <see cref="KeyValuePair{TKey, TValue}"/> of strings.
+        /// </summary>
+        /// <param name="AEntry">The <see cref="Unsafe.AVDictionaryEntry"/>.</param>
+        /// <returns>The <see cref="KeyValuePair{TKey, TValue}"/>.</returns>
+        /// <remarks>
+        /// Creates copies of the strings!
+        /// </remarks>
+        public static KeyValuePair<string, string> ToPair(
+            Fixed<Unsafe.AVDictionaryEntry> AEntry
+        )
+        {
+            Debug.Assert(
+                !AEntry.IsNull,
+                "AEntry is null.",
+                "This indicates a severe logic error in the code."
+            );
+
+            return new KeyValuePair<string, string>(
+                Marshal.PtrToStringAnsi((IntPtr)AEntry.Raw->key),
+                Marshal.PtrToStringAnsi((IntPtr)AEntry.Raw->value)
+            );
+        }
     }
     // ReSharper restore errors
 }
