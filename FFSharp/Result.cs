@@ -296,7 +296,9 @@ namespace FFSharp
     /// <typeparam name="T">The successful value type.</typeparam>
     /// <remarks>
     /// For ease of use, the type may not specify the error subclass, and may not use any
-    /// <typeparamref name="T"/> which is an <see cref="Exception"/>!
+    /// <typeparamref name="T"/> which is an <see cref="Exception"/>! Also, instead of using
+    /// <see cref="bool"/> as <typeparamref name="T"/>, consider using a <see cref="Result"/>
+    /// instead!
     /// </remarks>
     [PublicAPI]
     public readonly struct Result<T> :
@@ -436,7 +438,7 @@ namespace FFSharp
         /// <see cref="Value"/> if successful; otherwise <paramref name="ADefault"/>.
         /// </returns>
         [Pure]
-        public T Or(T ADefault)
+        public T OrDefault(T ADefault = default)
         {
             return IsSuccess ? Unbox : ADefault;
         }

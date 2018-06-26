@@ -199,12 +199,11 @@ namespace FFSharp
         public void OnError_Error_IsExecuted()
         {
             Assume.That(!FError.IsSuccess);
-            Assume.That(FError.Error, Is.SameAs(FException));
 
             var pass = false;
             FError.OnError(X =>
             {
-                Assert.That(X, Is.SameAs(FException));
+                Assert.That(X, Is.SameAs(FError.Error));
                 pass = true;
             });
 
@@ -251,7 +250,7 @@ namespace FFSharp
         }
 
         [Test]
-        [Description("Error of error is that error.")]
+        [Description("Error of erroneous is that error.")]
         public void Error_Error_IsError()
         {
             Assume.That(!FError.IsSuccess);
