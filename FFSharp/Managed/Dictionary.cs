@@ -150,7 +150,7 @@ namespace FFSharp.Managed
         /// </remarks>
         public Dictionary(bool AIgnoreCase = true)
             : this(
-                new SmartRef<Unsafe.AVDictionary>(),
+                new SmartRef<Unsafe.AVDictionary>(AVDictionary.Free),
                 AIgnoreCase
                     ? AVDictionaryFlags.None
                     : AVDictionaryFlags.MatchCase
