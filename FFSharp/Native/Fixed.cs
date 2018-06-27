@@ -239,27 +239,6 @@ namespace FFSharp.Native
         /// </summary>
         /// <param name="AFixed">The <see cref="Fixed{T}"/>.</param>
         public static implicit operator IntPtr(Fixed<T> AFixed) => AFixed.Address;
-
-        /// <summary>
-        /// Perform <see cref="Or(Fixed{T})"/> on two <see cref="Fixed{T}"/> instances.
-        /// </summary>
-        /// <param name="ALhs">The left hand side.</param>
-        /// <param name="ARhs">The right hand side.</param>
-        /// <returns>
-        /// <paramref name="ALhs"/> if it is non-<see langword="null"/>; otherwise
-        /// <paramref name="ARhs"/>.
-        /// </returns>
-        public static Fixed<T> operator |(Fixed<T> ALhs, Fixed<T> ARhs) => ALhs.Or(ARhs);
-        /// <summary>
-        /// Perform <see cref="Or(Fixed{T})"/> on <see cref="Fixed{T}"/> and a pointer.
-        /// </summary>
-        /// <param name="ALhs">The left hand side.</param>
-        /// <param name="ARhs">The right hand side.</param>
-        /// <returns>
-        /// <paramref name="ALhs"/> if it is non-<see langword="null"/>; otherwise
-        /// <paramref name="ARhs"/>.
-        /// </returns>
-        public static Fixed<T> operator |(Fixed<T> ALhs, [CanBeNull] T* ARhs) => ALhs.Or(ARhs);
         #endregion
     }
     // ReSharper restore errors
