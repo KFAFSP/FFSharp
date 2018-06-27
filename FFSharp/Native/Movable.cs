@@ -12,11 +12,11 @@ namespace FFSharp.Native
     internal static class Movable
     {
         /// <summary>
-        /// Initialize an absent <see cref="Movable{T}"/>.
+        /// Initialize a null pointer <see cref="Movable{T}"/>.
         /// </summary>
         /// <typeparam name="T">The pointed-tp type.</typeparam>
-        /// <returns>An absent <see cref="Movable{T}"/>.</returns>
-        public static Movable<T> Absent<T>() where T : unmanaged => default;
+        /// <returns>A null pointer <see cref="Movable{T}"/>.</returns>
+        public static Movable<T> Null<T>() where T : unmanaged => default;
 
         /// <summary>
         /// Initialize a <see cref="Movable{T}"/>.
@@ -46,9 +46,9 @@ namespace FFSharp.Native
         where T : unmanaged
     {
         /// <summary>
-        /// The absent <see cref="Movable{T}"/>.
+        /// The null pointer <see cref="Movable{T}"/>.
         /// </summary>
-        public static readonly Movable<T> Absent = default;
+        public static readonly Movable<T> Null = default;
 
         /// <summary>
         /// Initialize a <see cref="Movable{T}"/>.
@@ -88,7 +88,7 @@ namespace FFSharp.Native
         /// <inheritdoc/>
         public override string ToString()
         {
-            var target = !IsAbsent
+            var target = !IsNull
                 ? $" -> 0x{(IntPtr)(*Raw)}"
                 : "";
 
@@ -98,17 +98,17 @@ namespace FFSharp.Native
 
         #region Convenience
         /// <summary>
-        /// Get the present value of this or a default.
+        /// Get the non-null value of this or a default.
         /// </summary>
         /// <param name="ADefault">The default <see cref="Movable{T}"/>.</param>
         /// <returns>
-        /// This if <see cref="IsAbsent"/> is <see langword="false"/>; otherwise
+        /// This if <see cref="IsNull"/> is <see langword="false"/>; otherwise
         /// <paramref name="ADefault"/>.
         /// </returns>
         [Pure]
         public Movable<T> Or(Movable<T> ADefault)
         {
-            return !IsAbsent ? this : ADefault;
+            return !IsNull ? this : ADefault;
         }
         /// <summary>
         /// Cast to a different underlying struct type.
@@ -139,28 +139,28 @@ namespace FFSharp.Native
 
         #region Assertions
         /// <summary>
-        /// Assert that <see cref="Raw"/> is not <see langword="null"/>.
+        /// Assert that <see cref="Raw"/> and <see cref="Target"/> are not <see langword="null"/>.
         /// </summary>
         [DebuggerHidden]
         [Conditional("DEBUG")]
         public void AssertPresent()
         {
             Debug.Assert(
-                !IsAbsent,
-                "Movable is absent.",
+                IsPresent,
+                "Movable target is absent.",
                 "This indicates a severe logic error in the code."
             );
         }
         /// <summary>
-        /// Assert that <see cref="Raw"/> and <see cref="Target"/> are not <see langword="null"/>.
+        /// Assert that <see cref="Raw"/> is not <see langword="null"/>.
         /// </summary>
         [DebuggerHidden]
         [Conditional("DEBUG")]
         public void AssertNotNull()
         {
             Debug.Assert(
-                IsNotNull,
-                "Movable target is null.",
+                !IsNull,
+                "Movable is null.",
                 "This indicates a severe logic error in the code."
             );
         }
@@ -170,19 +170,19 @@ namespace FFSharp.Native
         /// Get or set the target pointer to the struct.
         /// </summary>
         /// <remarks>
-        /// This property is only safe to use if <see cref="IsAbsent"/> is <see langword="false"/>.
+        /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
         /// </remarks>
         [CanBeNull]
         public T* Target
         {
             get
             {
-                AssertPresent();
+                AssertNotNull();
                 return *Raw;
             }
             set
             {
-                AssertPresent();
+                AssertNotNull();
                 *Raw = value;
             }
         }
@@ -190,21 +190,21 @@ namespace FFSharp.Native
         /// <summary>
         /// Get a value indicating whether <see cref="Raw"/> is <see langword="null"/>.
         /// </summary>
-        public bool IsAbsent => Raw == null;
+        public bool IsNull => Raw == null;
         /// <summary>
         /// Get a value indicating whether the target pointer is not null.
         /// </summary>
         /// <remarks>
-        /// Only <see langword="true"/> if not <see cref="IsAbsent"/> and <see cref="Target"/> not
+        /// Only <see langword="true"/> if not <see cref="IsNull"/> and <see cref="Target"/> not
         /// <see langword="null"/>.
         /// </remarks>
-        public bool IsNotNull => IsAbsent && Target != null;
+        public bool IsPresent => !IsNull && Target != null;
 
         /// <summary>
         /// Get or set the target pointer as a <see cref="Fixed{T}"/>.
         /// </summary>
         /// <remarks>
-        /// This property is only safe to use if <see cref="IsAbsent"/> is <see langword="false"/>.
+        /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
         /// </remarks>
         public Fixed<T> AsFixed
         {
@@ -256,10 +256,10 @@ namespace FFSharp.Native
         public static bool operator !=(Movable<T> ALhs, [CanBeNull] T** ARhs) => ALhs.Raw != ARhs;
 
         /// <summary>
-        /// Implicitly convert a <see cref="Movable{T}"/> to it's !<see cref="IsAbsent"/>.
+        /// Implicitly convert a <see cref="Movable{T}"/> to it's !<see cref="IsNull"/>.
         /// </summary>
         /// <param name="AFixed">The <see cref="Movable{T}"/>.</param>
-        public static implicit operator bool(Movable<T> AFixed) => !AFixed.IsAbsent;
+        public static implicit operator bool(Movable<T> AFixed) => !AFixed.IsNull;
 
         /// <summary>
         /// Implicitly convert a pointer to a <see cref="Movable{T}"/>.

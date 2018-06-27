@@ -83,8 +83,8 @@ namespace FFSharp.Native
         public SmartRef(Movable<T> AShared)
         {
             Debug.Assert(
-                AShared.IsNotNull,
-                "Shared is null.",
+                AShared.IsPresent,
+                "Shared is absent.",
                 "This indicates a contract violation."
             );
 
@@ -102,7 +102,7 @@ namespace FFSharp.Native
                 Marshal.FreeHGlobal(Movable);
             }
 
-            Movable = Movable<T>.Absent;
+            Movable = Movable<T>.Null;
 
             if (ADisposing)
             {
@@ -148,7 +148,7 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            if (Movable.IsAbsent)
+            if (Movable.IsNull)
             {
                 return false;
             }

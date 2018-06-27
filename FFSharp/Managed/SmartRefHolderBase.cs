@@ -39,7 +39,8 @@ namespace FFSharp.Managed
                     "Ref is null.",
                     "This indicates a severe logic error in the code."
                 );
-                Ref.Movable.AssertPresent();
+
+                Ref.Movable.AssertNotNull();
 
                 return Ref.Movable;
             }
@@ -62,6 +63,9 @@ namespace FFSharp.Managed
         /// Create a new <see cref="SmartRefHolderBase{T}"/> instance.
         /// </summary>
         /// <param name="ASmartRef">The <see cref="SmartRef{T}"/>.</param>
+        /// <remarks>
+        /// Behaviour is undefined if <paramref name="ASmartRef"/> is <see langword="null"/>.
+        /// </remarks>
         internal SmartRefHolderBase([NotNull] SmartRef<T> ASmartRef)
         {
             Debug.Assert(
@@ -70,7 +74,7 @@ namespace FFSharp.Managed
                 "This indicates a contract violation."
             );
 
-            ASmartRef.Movable.AssertPresent();
+            ASmartRef.Movable.AssertNotNull();
 
             Ref = ASmartRef;
             Ref.Acquire(this);

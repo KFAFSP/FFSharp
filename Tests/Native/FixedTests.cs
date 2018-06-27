@@ -69,7 +69,7 @@ namespace FFSharp.Native
         }
 
         [Test]
-        [Description("Of returns a pointer wrapping Fixed.")]
+        [Description("Of returns a pointer-wrapping Fixed.")]
         public void Of_IsPointer()
         {
             Assert.That(Fixed.Of<Unmanaged>(FStruct).Raw == FStruct);
@@ -167,7 +167,7 @@ namespace FFSharp.Native
         }
 
         [Test]
-        [Description("IsNull is false if the wrapped pointer is not false.")]
+        [Description("IsNull is false if the wrapped pointer is not null.")]
         public void IsNull_NotNull_False()
         {
             Assume.That(FFixed.Raw != null);
