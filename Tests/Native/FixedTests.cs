@@ -34,11 +34,23 @@ namespace FFSharp.Native
         Fixed<Unmanaged> FFixed;
         Fixed<Unmanaged> FDefault;
 
+        [OneTimeSetUp]
+        public void Alloc()
+        {
+            FStruct = (Unmanaged*)Marshal.AllocHGlobal(Marshal.SizeOf<Unmanaged>());
+            FStruct->c = (Unmanaged.Nested*)Marshal.AllocHGlobal(Marshal.SizeOf<Unmanaged.Nested>());
+        }
+
+        [OneTimeTearDown]
+        public void Free()
+        {
+            Marshal.FreeHGlobal((IntPtr)FStruct->c);
+            Marshal.FreeHGlobal((IntPtr)FStruct);
+        }
+
         [SetUp]
         public void Setup()
         {
-            FStruct = (Unmanaged*)Marshal.AllocHGlobal(Marshal.SizeOf<Unmanaged>());
-
             FStruct->a = 1;
             FStruct->b.val = true;
             FStruct->c->val = true;
@@ -46,12 +58,6 @@ namespace FFSharp.Native
             FNull = Fixed<Unmanaged>.Null;
             FFixed = new Fixed<Unmanaged>(FStruct);
             FDefault = default;
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            Marshal.FreeHGlobal((IntPtr)FStruct);
         }
 
         #region Constructors
@@ -88,7 +94,7 @@ namespace FFSharp.Native
             Assert.That(FFixed.Equals(FFixed));
             Assert.That(FFixed == FFixed);
 
-            Assert.That(FFixed.Equals(FDefault));
+            Assert.That(FDefault.Equals(FDefault));
             Assert.That(FDefault == FDefault);
         }
 
