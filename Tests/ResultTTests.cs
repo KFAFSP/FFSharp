@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 // ReSharper disable EqualExpressionComparison
+#pragma warning disable CS1718 // Reflexive equality comparions
 
 namespace FFSharp
 {
@@ -338,6 +339,7 @@ namespace FFSharp
             var thrown = Assert.Throws<Exception>(() =>
             {
                 var value = FError.Value;
+                Assert.That(value == 0); // Dummy to use var.
             });
             Assert.That(thrown, Is.SameAs(FError.Error));
         }
@@ -410,6 +412,7 @@ namespace FFSharp
             var thrown = Assert.Throws<Exception>(() =>
             {
                 var value = (int)FError;
+                Assert.That(value == 0); // Dummy to use var.
             });
             Assert.That(thrown, Is.SameAs(FError.Error));
         }
@@ -431,6 +434,7 @@ namespace FFSharp
             Assert.Throws<ArgumentNullException>(() =>
             {
                 Result<int> res = null;
+                Assert.That(!res); // Dummy to use var.
             });
         }
 
@@ -451,3 +455,5 @@ namespace FFSharp
         #endregion
     }
 }
+
+#pragma warning restore CS1718

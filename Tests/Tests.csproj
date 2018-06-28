@@ -40,6 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DisposableTests.cs" />
+    <Compile Include="Native\FixedTests.cs" />
+    <Compile Include="Native\MovableTests.cs" />
+    <Compile Include="Native\SmartRefTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultTests.cs" />
     <Compile Include="ResultTTests.cs" />

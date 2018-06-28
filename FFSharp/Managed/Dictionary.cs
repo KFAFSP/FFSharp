@@ -301,7 +301,7 @@ namespace FFSharp.Managed
         }
 
         /// <inheritdoc />
-        public int Count => AVDictionary.Count(Movable.AsFixed);
+        public int Count => AVDictionary.Count(Movable.Fixed);
         /// <inheritdoc />
         public bool IsReadOnly => false;
         #endregion
@@ -311,7 +311,7 @@ namespace FFSharp.Managed
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
             return AVDictionary.GetEnumerator(
-                Movable.AsFixed,
+                Movable.Fixed,
                 "",
                 AVDictionaryFlags.IgnoreSuffix | Flags
             ).Map(X => AVDictionary.ToPair(X));

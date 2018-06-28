@@ -70,7 +70,7 @@ namespace FFSharp
         public static Result<Movable<T>> CheckAlloc<T>(this Movable<T> ARef)
             where T : unmanaged
         {
-            return !ARef.IsAbsent && ARef.AsFixed.IsNull
+            return !ARef.IsNull && ARef.Fixed.IsNull
                 ? new Result<Movable<T>>(new BadAllocationException(typeof(T)))
                 : new Result<Movable<T>>(ARef);
         }

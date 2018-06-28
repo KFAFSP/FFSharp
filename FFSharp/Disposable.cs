@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
@@ -123,6 +124,7 @@ namespace FFSharp
         /// This method is conditionally available only in DEBUG builds.
         /// </remarks>
         [Conditional("DEBUG")]
+        [ExcludeFromCodeCoverage]
         public void AssertNotDisposed()
         {
             Debug.Assert(
