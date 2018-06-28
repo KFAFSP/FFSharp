@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
@@ -111,6 +112,20 @@ namespace FFSharp.Native
             return !IsNull ? this : ADefault;
         }
         /// <summary>
+        /// Get the present <see cref="Target"/> of this or a default.
+        /// </summary>
+        /// <param name="ADefault">The default target <see cref="Fixed{T}"/>.</param>
+        /// <returns>
+        /// This if <see cref="IsPresent"/> is <see langword="true"/>; otherwise
+        /// <paramref name="ADefault"/>.
+        /// </returns>
+        [Pure]
+        public Fixed<T> TargetOr(Fixed<T> ADefault)
+        {
+            return IsPresent ? new Fixed<T>(*Raw) : ADefault;
+        }
+
+        /// <summary>
         /// Cast to a different underlying struct type.
         /// </summary>
         /// <typeparam name="U">The struct type to cast to.</typeparam>
@@ -143,6 +158,7 @@ namespace FFSharp.Native
         /// </summary>
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        [ExcludeFromCodeCoverage]
         public void AssertPresent()
         {
             Debug.Assert(
@@ -156,6 +172,7 @@ namespace FFSharp.Native
         /// </summary>
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        [ExcludeFromCodeCoverage]
         public void AssertNotNull()
         {
             Debug.Assert(
@@ -256,10 +273,10 @@ namespace FFSharp.Native
         public static bool operator !=(Movable<T> ALhs, [CanBeNull] T** ARhs) => ALhs.Raw != ARhs;
 
         /// <summary>
-        /// Implicitly convert a <see cref="Movable{T}"/> to it's !<see cref="IsNull"/>.
+        /// Implicitly convert a <see cref="Movable{T}"/> to it's <see cref="IsPresent"/>.
         /// </summary>
         /// <param name="AFixed">The <see cref="Movable{T}"/>.</param>
-        public static implicit operator bool(Movable<T> AFixed) => !AFixed.IsNull;
+        public static implicit operator bool(Movable<T> AFixed) => AFixed.IsPresent;
 
         /// <summary>
         /// Implicitly convert a pointer to a <see cref="Movable{T}"/>.

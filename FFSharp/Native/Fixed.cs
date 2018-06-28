@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
@@ -139,6 +140,7 @@ namespace FFSharp.Native
         /// </summary>
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        [ExcludeFromCodeCoverage]
         public void AssertNotNull()
         {
             Debug.Assert(

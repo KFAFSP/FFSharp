@@ -14,9 +14,10 @@ namespace FFSharp.Native
     [Category("Native")]
     [Category("Utilities")]
     [TestOf(typeof(Fixed<>))]
+    // ReSharper disable errors
     public unsafe class FixedTests
     {
-        public unsafe struct Unmanaged
+        public struct Unmanaged
         {
             public struct Nested
             {
@@ -148,6 +149,14 @@ namespace FFSharp.Native
             Assert.That(FNull.Or(FFixed) == FFixed);
         }
 
+        [Test]
+        [Description("Casting does not change the address.")]
+        public void Cast_RetainsAddress()
+        {
+            Assert.That(FNull.Cast<bool>().Address == FNull.Address);
+            Assert.That(FFixed.Cast<int>().Address == FFixed.Address);
+        }
+
         #region Properties
         [Test]
         [Description("Address returns the address of the wrapped pointer.")]
@@ -247,4 +256,5 @@ namespace FFSharp.Native
         }
         #endregion
     }
+    // ReSharper restore errors
 }

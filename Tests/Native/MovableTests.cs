@@ -13,9 +13,10 @@ namespace FFSharp.Native
     [Category("Native")]
     [Category("Utilities")]
     [TestOf(typeof(Movable<>))]
+    // ReSharper disable errors
     public unsafe class MovableTests
     {
-        public unsafe struct Unmanaged
+        public struct Unmanaged
         {
             public int a;
             public int b;
@@ -140,6 +141,61 @@ namespace FFSharp.Native
         }
         #endregion
 
+        [Test]
+        [Description("Or with null returns default.")]
+        public void Or_Null_ReturnsDefault()
+        {
+            Assume.That(FNull.Raw == null);
+
+            Assert.That(FNull.Or(FAbsent) == FAbsent);
+        }
+
+        [Test]
+        [Description("Or with non null returns this.")]
+        public void Or_NotNull_ReturnsThis()
+        {
+            Assume.That(FAbsent.Raw != null);
+
+            Assert.That(FAbsent.Or(null) == FAbsent);
+        }
+
+        [Test]
+        [Description("TargetOr with null returns default.")]
+        public void TargetOr_Null_ReturnsDefault()
+        {
+            Assume.That(FNull.Raw == null);
+
+            Assert.That(FNull.TargetOr(FStruct1Ptr) == FStruct1Ptr);
+        }
+
+        [Test]
+        [Description("TargetOr with absent returns default.")]
+        public void TargetOr_Absent_ReturnsDefault()
+        {
+            Assume.That(FAbsent.Raw != null);
+            Assume.That(!FAbsent.IsPresent);
+
+            Assert.That(FAbsent.TargetOr(FStruct2Ptr) == FStruct2Ptr);
+        }
+
+        [Test]
+        [Description("TargetOr with present return this.")]
+        public void TargetOr_Present_ReturnsThis()
+        {
+            Assume.That(FPresent.IsPresent);
+
+            Assert.That(FPresent.TargetOr(FStruct2Ptr) == FPresent);
+        }
+
+        [Test]
+        [Description("Casting does not change the address.")]
+        public void Cast_RetainsAddress()
+        {
+            Assert.That(FNull.Cast<bool>().Address == FNull.Address);
+            Assert.That(FPresent.Cast<int>().Address == FPresent.Address);
+            Assert.That(FAbsent.Cast<int>().Address == FAbsent.Address);
+        }
+
         #region Properties
         [Test]
         [Description("Address returns the address of the wrapped pointer.")]
@@ -158,6 +214,17 @@ namespace FFSharp.Native
             Assume.That(FAbsent.Raw == FNullPtrPtr);
 
             Assert.That(FAbsent.Target == null);
+        }
+
+        [Test]
+        [Description("Target of non null can be changed.")]
+        public void Target_NotNull_CanBeChanged()
+        {
+            Assume.That(FPresent.Raw == FStructPtrPtr);
+            Assume.That(*FStructPtrPtr == FStruct1Ptr);
+
+            FPresent.Target = FStruct2Ptr;
+            Assert.That(FPresent.Target == FStruct2Ptr);
         }
 
         [Test]
@@ -219,10 +286,78 @@ namespace FFSharp.Native
 
             Assert.That(FPresent.AsFixed == FStruct1Ptr);
         }
+
+        [Test]
+        [Description("AsFixed of non null can be changed.")]
+        public void AsFixed_NotNull_CanBeChanged()
+        {
+            Assume.That(FPresent.Raw == FStructPtrPtr);
+            Assume.That(*FStructPtrPtr == FStruct1Ptr);
+
+            FPresent.AsFixed = Fixed.Of<Unmanaged>(FStruct2Ptr);
+            Assert.That(FPresent.AsFixed == FStruct2Ptr);
+        }
         #endregion
 
         #region Conversion operators
+        [Test]
+        [Description("Implicit conversion to bool on absent returns false.")]
+        public void ImplicitToBool_Absent_False()
+        {
+            Assume.That(!FNull.IsPresent);
+            Assume.That(!FAbsent.IsPresent);
 
+            Assert.That(!FNull);
+            Assert.That(!FAbsent);
+        }
+
+        [Test]
+        [Description("Implicit conversion to bool on present returns true.")]
+        public void ImplicitToBool_Present_True()
+        {
+            Assume.That(FPresent.IsPresent);
+
+            Assert.That(FPresent);
+        }
+
+        [Test]
+        [Description("Implict conversion to pointer returns the contained pointer.")]
+        public void ImplicitToPointer_IsContainedPointer()
+        {
+            Unmanaged** ptr = FNull;
+            Assert.That(ptr == FNull.Raw);
+
+            ptr = FPresent;
+            Assert.That(ptr == FPresent.Raw);
+        }
+
+        [Test]
+        [Description("Implicit conversion from pointer wraps the pointer.")]
+        public void ImplicitFromPointer_WrapsPointer()
+        {
+            Movable<Unmanaged> test = FStructPtrPtr;
+            Assert.That(test.Raw == FStructPtrPtr);
+        }
+
+        [Test]
+        [Description("Implicit conversion to address returns the address.")]
+        public void ImplicitToAddress_IsAddress()
+        {
+            IntPtr addr = FNull;
+            Assert.That(addr == FNull.Address);
+
+            addr = FPresent;
+            Assert.That(addr == FPresent.Address);
+        }
+
+        [Test]
+        [Description("Implicit conversion from address wraps the pointer to that address.")]
+        public void ImplictFromAddress_WrapsPointer()
+        {
+            Movable<Unmanaged> test = (IntPtr)FStructPtrPtr;
+            Assert.That(test.Raw == FStructPtrPtr);
+        }
         #endregion
     }
+    // ReSharper restore errors
 }
