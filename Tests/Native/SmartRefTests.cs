@@ -3,9 +3,6 @@ using System.Runtime.InteropServices;
 
 using NUnit.Framework;
 
-// ReSharper disable ReturnValueOfPureMethodIsNotUsed
-// ReSharper disable EqualExpressionComparison
-
 namespace FFSharp.Native
 {
     [TestFixture]
@@ -72,15 +69,7 @@ namespace FFSharp.Native
             FSharedPtr.SetTarget(FSharedInst);
 
             FShared = new SmartRef<Unmanaged>(FSharedPtr);
-            FOwning = new SmartRef<Unmanaged>(X =>
-            {
-                FCleanupExecuted = true;
-
-                if (X.IsPresent)
-                {
-                    Marshal.FreeHGlobal(X.Fixed);
-                }
-            });
+            FOwning = new SmartRef<Unmanaged>(X => FCleanupExecuted = true);
 
             FSubscriber = new Subscriber();
             FDead = new Subscriber();
@@ -96,24 +85,28 @@ namespace FFSharp.Native
 
         #region Constructors
         [Test]
+        [Description("New shared instances indicate shared.")]
         public void New_Shared_IsShared()
         {
             Assert.That(!FShared.IsOwning);
         }
 
         [Test]
+        [Description("New shared instances wrap the shared pointer.")]
         public void New_Shared_WrapsPointer()
         {
             Assert.That(FShared.Movable == FSharedPtr);
         }
 
         [Test]
+        [Description("New owning instances indicate owning.")]
         public void New_Owning_IsOwning()
         {
             Assert.That(FOwning.IsOwning);
         }
 
         [Test]
+        [Description("New owning instances allocate a new Movable with null taget.")]
         public void New_Owning_AllocatesNewZeroed()
         {
             Assert.That(FOwning.Movable);
@@ -122,12 +115,14 @@ namespace FFSharp.Native
         #endregion
 
         [Test]
+        [Description("Acquire on not disposed returns true.")]
         public void Acquire_NotDisposed_ReturnsTrue()
         {
             Assert.DoesNotThrow(() => FShared.Acquire(FSubscriber));
         }
 
         [Test]
+        [Description("Acquire on disposed throws ObjectDisposedException.")]
         public void Acquire_Disposed_ThrowsObjectDisposedException()
         {
             FShared.Dispose();
@@ -136,6 +131,7 @@ namespace FFSharp.Native
         }
 
         [Test]
+        [Description("Acquiring does not prevent the GC from collection the subscriber.")]
         public void Acquire_DoesNotPreventGCOnSubscriber()
         {
             Assume.That(Subscriber.Disposed == 0);
@@ -154,6 +150,7 @@ namespace FFSharp.Native
         }
 
         [Test]
+        [Description("Releasing and propagating dispose can deal with dead subscribers.")]
         public void ReleaseAndPropagate_CanHandleDeadRefs()
         {
             Assume.That(Subscriber.Disposed == 0);
@@ -177,6 +174,7 @@ namespace FFSharp.Native
         }
 
         [Test]
+        [Description("Release on unsubscribed does nothing.")]
         public void Release_Missing_DoesNothing()
         {
             Assume.That(Subscriber.Disposed == 0);
@@ -191,7 +189,8 @@ namespace FFSharp.Native
 
         #region Dispose
         [Test]
-        public void Dispose_Shared_PropagatesToSubscribers()
+        [Description("Disposing propagates to all subscribers.")]
+        public void Dispose_PropagatesToSubscribers()
         {
             Assume.That(Subscriber.Disposed == 0);
 
@@ -202,7 +201,8 @@ namespace FFSharp.Native
         }
 
         [Test]
-        public void Dispose_Shared_DoesNotPropagateToUnsubscribed()
+        [Description("Disposing does not propagate to ex subscribers.")]
+        public void Dispose_DoesNotPropagateToUnsubscribed()
         {
             Assume.That(Subscriber.Disposed == 0);
 
@@ -214,6 +214,7 @@ namespace FFSharp.Native
         }
 
         [Test]
+        [Description("Disposing shared detaches the Movable without modifying it.")]
         public void Dispose_Shared_DetachesWithoutModify()
         {
             Assume.That(FShared.Movable == FSharedPtr);
@@ -226,29 +227,7 @@ namespace FFSharp.Native
         }
 
         [Test]
-        public void Dispose_Owning_Propagates()
-        {
-            Assume.That(Subscriber.Disposed == 0);
-
-            FOwning.Acquire(FSubscriber);
-            FOwning.Dispose();
-
-            Assert.That(Subscriber.Disposed == 1);
-        }
-
-        [Test]
-        public void Dispose_Owning_DoesNotPropagateToUnsubscribed()
-        {
-            Assume.That(Subscriber.Disposed == 0);
-
-            FOwning.Acquire(FSubscriber);
-            FOwning.Release(FSubscriber);
-            FOwning.Dispose();
-
-            Assert.That(Subscriber.Disposed == 0);
-        }
-
-        [Test]
+        [Description("Disposing owning executes the cleanup and detaches the Movable.")]
         public void Dispose_Owning_ExecutesCleanupAndDetaches()
         {
             Assume.That(!FCleanupExecuted);
