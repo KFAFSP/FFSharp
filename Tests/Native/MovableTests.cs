@@ -196,6 +196,17 @@ namespace FFSharp.Native
             Assert.That(FAbsent.Cast<int>().Address == FAbsent.Address);
         }
 
+        [Test]
+        [Description("Target of non null can be changed.")]
+        public void SetTarget_NotNull_CanBeChanged()
+        {
+            Assume.That(FPresent.Raw == FStructPtrPtr);
+            Assume.That(*FStructPtrPtr == FStruct1Ptr);
+
+            FPresent.SetTarget(FStruct2Ptr);
+            Assert.That(FPresent.Target == FStruct2Ptr);
+        }
+
         #region Properties
         [Test]
         [Description("Address returns the address of the wrapped pointer.")]
@@ -214,17 +225,6 @@ namespace FFSharp.Native
             Assume.That(FAbsent.Raw == FNullPtrPtr);
 
             Assert.That(FAbsent.Target == null);
-        }
-
-        [Test]
-        [Description("Target of non null can be changed.")]
-        public void Target_NotNull_CanBeChanged()
-        {
-            Assume.That(FPresent.Raw == FStructPtrPtr);
-            Assume.That(*FStructPtrPtr == FStruct1Ptr);
-
-            FPresent.Target = FStruct2Ptr;
-            Assert.That(FPresent.Target == FStruct2Ptr);
         }
 
         [Test]
@@ -277,46 +277,35 @@ namespace FFSharp.Native
         }
 
         [Test]
-        [Description("AsFixed wraps target pointer as Fixed.")]
-        public void AsFixed_NotNull_WrapsTargetPointer()
+        [Description("Fixed wraps target pointer as Fixed.")]
+        public void Fixed_NotNull_WrapsTargetPointer()
         {
             Assume.That(FStructPtrPtr != null);
             Assume.That(*FStructPtrPtr == FStruct1Ptr);
             Assume.That(FPresent.Raw == FStructPtrPtr);
 
-            Assert.That(FPresent.AsFixed == FStruct1Ptr);
-        }
-
-        [Test]
-        [Description("AsFixed of non null can be changed.")]
-        public void AsFixed_NotNull_CanBeChanged()
-        {
-            Assume.That(FPresent.Raw == FStructPtrPtr);
-            Assume.That(*FStructPtrPtr == FStruct1Ptr);
-
-            FPresent.AsFixed = Fixed.Of<Unmanaged>(FStruct2Ptr);
-            Assert.That(FPresent.AsFixed == FStruct2Ptr);
+            Assert.That(FPresent.Fixed == FStruct1Ptr);
         }
         #endregion
 
         #region Conversion operators
         [Test]
-        [Description("Implicit conversion to bool on absent returns false.")]
-        public void ImplicitToBool_Absent_False()
+        [Description("Implicit conversion to bool on null returns false.")]
+        public void ImplicitToBool_Null_False()
         {
-            Assume.That(!FNull.IsPresent);
-            Assume.That(!FAbsent.IsPresent);
+            Assume.That(FNull.Raw == null);
 
             Assert.That(!FNull);
-            Assert.That(!FAbsent);
         }
 
         [Test]
-        [Description("Implicit conversion to bool on present returns true.")]
-        public void ImplicitToBool_Present_True()
+        [Description("Implicit conversion to bool on not null returns true.")]
+        public void ImplicitToBool_NotNull_True()
         {
-            Assume.That(FPresent.IsPresent);
+            Assume.That(FAbsent.Raw != null);
+            Assume.That(FPresent.Raw != null);
 
+            Assert.That(FAbsent);
             Assert.That(FPresent);
         }
 

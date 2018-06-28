@@ -55,6 +55,7 @@ namespace FFSharp.Native
         /// Get a value indicating whether this <see cref="SmartRef{T}"/> is owning.
         /// </summary>
         public bool IsOwning { get; }
+
         /// <summary>
         /// Get the <see cref="Movable{T}"/> of this <see cref="SmartRef{T}"/>.
         /// </summary>
@@ -74,6 +75,7 @@ namespace FFSharp.Native
         {
             IsOwning = true;
             Movable = Marshal.AllocHGlobal(sizeof(void*));
+            Movable.SetTarget(null);
             FCleanup = ACleanup;
         }
         /// <summary>
@@ -124,7 +126,7 @@ namespace FFSharp.Native
             var refs = FReferences.ToArray();
             FReferences.Clear();
 
-            foreach (var weakRef in FReferences)
+            foreach (var weakRef in refs)
             {
                 if (weakRef.TryGetTarget(out var target))
                 {
@@ -137,10 +139,8 @@ namespace FFSharp.Native
         /// Acquire a reference to this <see cref="Movable{T}"/>.
         /// </summary>
         /// <param name="ADisposable">The acquiring <see cref="IDisposable"/>.</param>
-        /// <returns>
-        /// <see langword="true"/> if a reference was acquired; otherwise <see langword="false"/>.
-        /// </returns>
-        public bool Acquire([NotNull] IDisposable ADisposable)
+        /// <exception cref="ObjectDisposedException">This instance is disposed.</exception>
+        public void Acquire([NotNull] IDisposable ADisposable)
         {
             Debug.Assert(
                 ADisposable != null,
@@ -148,13 +148,9 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            if (Movable.IsNull)
-            {
-                return false;
-            }
+            ThrowIfDisposed();
 
             FReferences.Add(new WeakReference<IDisposable>(ADisposable));
-            return true;
         }
         /// <summary>
         /// Release an acquired reference to this <see cref="Movable{T}"/>.

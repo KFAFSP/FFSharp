@@ -55,7 +55,7 @@ namespace FFSharp.Managed
             {
                 ThrowIfDisposed();
 
-                return Movable.AsFixed;
+                return Movable.Fixed;
             }
         }
 

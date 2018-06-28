@@ -184,7 +184,20 @@ namespace FFSharp.Native
         #endregion
 
         /// <summary>
-        /// Get or set the target pointer to the struct.
+        /// Set the target pointer.
+        /// </summary>
+        /// <param name="ATarget">The target pointer.</param>
+        /// <remarks>
+        /// This method is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
+        /// </remarks>
+        public void SetTarget([CanBeNull] T* ATarget)
+        {
+            AssertNotNull();
+            *Raw = ATarget;
+        }
+
+        /// <summary>
+        /// Get the target pointer to the struct.
         /// </summary>
         /// <remarks>
         /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
@@ -196,11 +209,6 @@ namespace FFSharp.Native
             {
                 AssertNotNull();
                 return *Raw;
-            }
-            set
-            {
-                AssertNotNull();
-                *Raw = value;
             }
         }
 
@@ -218,15 +226,14 @@ namespace FFSharp.Native
         public bool IsPresent => !IsNull && Target != null;
 
         /// <summary>
-        /// Get or set the target pointer as a <see cref="Fixed{T}"/>.
+        /// Get the target pointer as a <see cref="Fixed{T}"/>.
         /// </summary>
         /// <remarks>
         /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
         /// </remarks>
-        public Fixed<T> AsFixed
+        public Fixed<T> Fixed
         {
             get => new Fixed<T>(Target);
-            set => Target = value.Raw;
         }
 
         #region Operator overloads
@@ -273,10 +280,10 @@ namespace FFSharp.Native
         public static bool operator !=(Movable<T> ALhs, [CanBeNull] T** ARhs) => ALhs.Raw != ARhs;
 
         /// <summary>
-        /// Implicitly convert a <see cref="Movable{T}"/> to it's <see cref="IsPresent"/>.
+        /// Implicitly convert a <see cref="Movable{T}"/> to it's !<see cref="IsNull"/>.
         /// </summary>
-        /// <param name="AFixed">The <see cref="Movable{T}"/>.</param>
-        public static implicit operator bool(Movable<T> AFixed) => AFixed.IsPresent;
+        /// <param name="AMovable">The <see cref="Movable{T}"/>.</param>
+        public static implicit operator bool(Movable<T> AMovable) => !AMovable.IsNull;
 
         /// <summary>
         /// Implicitly convert a pointer to a <see cref="Movable{T}"/>.
