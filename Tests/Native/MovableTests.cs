@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 // ReSharper disable EqualExpressionComparison
+#pragma warning disable CS1718 // Reflexive equality comparions
 
 namespace FFSharp.Native
 {
@@ -350,3 +351,5 @@ namespace FFSharp.Native
     }
     // ReSharper restore errors
 }
+
+#pragma warning restore CS1718

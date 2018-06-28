@@ -42,7 +42,7 @@ namespace FFSharp.Native
     /// check contracts.
     /// </remarks>
     // ReSharper disable errors
-    internal unsafe struct Movable<T> :
+    internal readonly unsafe struct Movable<T> :
         IEquatable<Movable<T>>
         where T : unmanaged
     {
@@ -200,7 +200,13 @@ namespace FFSharp.Native
         /// Get the target pointer to the struct.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
+        /// </para>
+        /// <para>
+        /// To set the target, use <see cref="SetTarget(T*)"/>. Setters are not allowed on immutable
+        /// objects, so one has to use a method instead.
+        /// </para>
         /// </remarks>
         [CanBeNull]
         public T* Target
