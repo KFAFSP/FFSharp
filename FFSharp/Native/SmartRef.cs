@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 
 using JetBrains.Annotations;
 
+using Whetstone.Contracts;
+
 namespace FFSharp.Native
 {
     /// <summary>

@@ -5,6 +5,8 @@ using FFSharp.Native;
 
 using JetBrains.Annotations;
 
+using Whetstone.Contracts;
+
 namespace FFSharp.Managed
 {
     /// <summary>

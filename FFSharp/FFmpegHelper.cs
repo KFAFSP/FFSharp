@@ -2,6 +2,8 @@
 
 using JetBrains.Annotations;
 
+using Whetstone.Contracts;
+
 namespace FFSharp
 {
     /// <summary>

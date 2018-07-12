@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 
 using JetBrains.Annotations;
 
+using Whetstone.Contracts;
+
 using Unsafe = FFmpeg.AutoGen;
 
 namespace FFSharp.Native

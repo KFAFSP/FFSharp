@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFSharp", "FFSharp\FFSharp.csproj", "{F2E43233-5D7C-4F0A-8A7C-51B79B20F4A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{B4D037A5-059B-42A9-B2B9-1ABAB15C955A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFSharp.Tests", "FFSharp.Tests\FFSharp.Tests.csproj", "{B4D037A5-059B-42A9-B2B9-1ABAB15C955A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
