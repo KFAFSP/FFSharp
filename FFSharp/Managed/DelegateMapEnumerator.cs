@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
@@ -12,6 +13,7 @@ namespace FFSharp.Managed
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
+    [ExcludeFromCodeCoverage]
     internal sealed class DelegateMapEnumerator<TIn, TOut> : MapEnumerator<TIn, TOut>
     {
         [NotNull]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 using JetBrains.Annotations;
@@ -10,179 +11,210 @@ using Whetstone.Contracts;
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Manages a relocatable pointer to a struct with shared or owning storage.
+    /// Reference type that safely wraps a reference to a <see cref="Movable{T}"/> that originates
+    /// from either managed or unmanaged code.
     /// </summary>
     /// <typeparam name="T">The pointed-to struct type.</typeparam>
     /// <remarks>
-    /// <para>
-    /// This class decouples the problem of ownership management from any managed implementation by
-    /// allowing both referencing a movable pointer with shared access from unmanaged code whilst
-    /// providing a way to create such a reference from the CLR side.
-    /// </para>
-    /// <para>
-    /// For owning <see cref="SmartRef{T}"/> instances a cleanup <see cref="Action{T}"/> may be
-    /// supplied which is invoked on cleanup. This action must not throw as it is also run in the
-    /// finalizer if necessary!
-    /// </para>
-    /// <para>
-    /// To use <see cref="SmartRef{T}"/> properly, the following things should be noted:
-    /// <list type="bullet">
-    /// <item><description>
-    /// Any holder of <see cref="SmartRef{T}"/> must derive from <see cref="IDisposable"/> and
-    /// cease all use of the reference on <see cref="IDisposable.Dispose()"/> which will be called
-    /// when the <see cref="SmartRef{T}"/> ceases to exist because of outside interference.
-    /// </description></item>
-    /// <item><description>
-    /// Any holder of <see cref="SmartRef{T}"/> must call
-    /// <see cref="SmartRef{T}.Acquire(IDisposable)"/> when it initially gets the
-    /// <see cref="SmartRef{T}"/> to indicate it's usage of it. When the holder is disposed, it
-    /// should call <see cref="SmartRef{T}.Release(IDisposable)"/> to signal that it no longer needs
-    /// to be informed of the reference's death.
-    /// </description></item>
-    /// <item><description>
-    /// Any holder of <see cref="SmartRef{T}"/> shall keep the reference to the object around as
-    /// long as it is needed and unroot it once it is no longer needed to allow it to be garbage-
-    /// collected.
-    /// </description></item>
-    /// </list>
-    /// </para>
+    /// Decouples object lifetimes for shared and unique ownership of unmanaged structs by providing
+    /// a mechanism for wrapping and safely disposing or propagating the disposal of both. If a
+    /// <see cref="SmartRef{T}"/> is owning, it will couple the <see cref="Movable{T}"/> lifetime to
+    /// itself and optionally execute a cleanup action on it on dispose. If it is non-owning, it
+    /// will simply store the pointer and gate access to it as long as it is not disposed.
     /// </remarks>
     // ReSharper disable errors
     internal unsafe class SmartRef<T> : Disposable
         where T : unmanaged
     {
+        static Movable<T> AllocMovable()
+        {
+            Movable<T> alloc = Marshal.AllocHGlobal(sizeof(void*));
+            alloc.SetTarget(null);
+
+            return alloc;
+        }
+
         [CanBeNull]
-        Action<Movable<T>> FCleanup;
+        readonly Action<Movable<T>> FCleanup;
+        Movable<T> FMovable;
+        [NotNull]
+        readonly List<WeakReference<IDisposable>> FHolders = new List<WeakReference<IDisposable>>();
+
+        /// <summary>
+        /// Create an owning <see cref="SmartRef{T}"/>.
+        /// </summary>
+        /// <param name="ACleanup">The optional cleanup <see cref="Action{T}"/>.</param>
+        /// <exception cref="OutOfMemoryException">Out of memory.</exception>
+        public SmartRef([CanBeNull] Action<Movable<T>> ACleanup = null)
+        {
+            FCleanup = ACleanup;
+
+            FMovable = AllocMovable();
+            IsOwning = true;
+        }
+        /// <summary>
+        /// Create a shared <see cref="SmartRef{T}"/>.
+        /// </summary>
+        /// <param name="AShared">The shared <see cref="Movable{T}"/>.</param>
+        /// <exception cref="ArgumentException">Shared Movable may not be null.</exception>
+        public SmartRef(Movable<T> AShared)
+        {
+            if (AShared.IsNull)
+                throw new ArgumentException("Shared Movable may not be null.", nameof(AShared));
+
+            FMovable = AShared;
+            IsOwning = false;
+        }
+
+        /// <summary>
+        /// Link a holder to this <see cref="SmartRef{T}"/>.
+        /// </summary>
+        /// <param name="AHolder">The <see cref="IDisposable"/> holder.</param>
+        /// <exception cref="ObjectDisposedException">This instance is disposed.</exception>
+        public void Link([NotNull] IDisposable AHolder)
+        {
+            ThrowIfDisposed();
+
+            Debug.Assert(
+                AHolder != null,
+                "Disposable is null.",
+                "This indicates a contract violation."
+            );
+
+            for (var I = 0; I < FHolders.Count; ++I)
+            {
+                if (FHolders[I].TryGetTarget(out var test))
+                {
+                    if (ReferenceEquals(test, AHolder)) return;
+                    continue;
+                }
+
+                FHolders.RemoveAt(I);
+                --I;
+            }
+
+            FHolders.Add(new WeakReference<IDisposable>(AHolder));
+        }
+        /// <summary>
+        /// Unlink a holder from this <see cref="SmartRef{T}"/>.
+        /// </summary>
+        /// <param name="AHolder">The <see cref="IDisposable"/> holder.</param>
+        /// <remarks>
+        /// Will dispose the <see cref="SmartRef{T}"/> if there are no more linked holders left.
+        /// </remarks>
+        public void Unlink([NotNull] IDisposable AHolder)
+        {
+            if (IsDisposed) return;
+
+            Debug.Assert(
+                AHolder != null,
+                "Disposable is null.",
+                "This indicates a contract violation."
+            );
+
+            int I;
+            for (I = 0; I < FHolders.Count; ++I)
+            {
+                if (FHolders[I].TryGetTarget(out var test))
+                {
+                    if (ReferenceEquals(test, AHolder))
+                    {
+                        FHolders.RemoveAt(I);
+                        if (!IsLinked) Dispose();
+                        return;
+                    }
+                    continue;
+                }
+
+                FHolders.RemoveAt(I);
+                --I;
+            }
+        }
+
+        /// <summary>
+        /// Get a value indicating whether this <see cref="SmartRef{T}"/> is linked.
+        /// </summary>
+        public bool IsLinked
+        {
+            get
+            {
+                for (var I = 0; I < FHolders.Count; ++I)
+                {
+                    if (FHolders[I].TryGetTarget(out _))
+                        return true;
+
+                    FHolders.RemoveAt(I);
+                    --I;
+                }
+
+                return false;
+            }
+        }
+
+        #region Disposable overrides
+        /// <inheritdoc />
+        protected override void Dispose(bool ADisposing)
+        {
+            var holders = FHolders
+                .Select(X => X.TryGetTarget(out var target) ? target : null)
+                .Where(X => X != null)
+                .ToArray();
+
+            FHolders.Clear();
+            foreach (var holder in holders)
+                holder.Dispose();
+
+            if (IsOwning)
+            {
+                FCleanup?.Invoke(FMovable);
+                Marshal.FreeHGlobal(FMovable);
+            }
+
+            FMovable = null;
+            base.Dispose(ADisposing);
+        }
+        #endregion
+
+        /// <summary>
+        /// Get the underlying <see cref="Movable{T}"/>.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">This instance is disposed.</exception>
+        public Movable<T> Movable
+        {
+            get
+            {
+                ThrowIfDisposed();
+                Debug.Assert(
+                    !FMovable.IsNull,
+                    "Movable is null.",
+                    "This indicates a severe logic error in the code."
+                );
+
+                return FMovable;
+            }
+        }
         /// <summary>
         /// Get a value indicating whether this <see cref="SmartRef{T}"/> is owning.
         /// </summary>
         public bool IsOwning { get; }
 
         /// <summary>
-        /// Get the <see cref="Movable{T}"/> of this <see cref="SmartRef{T}"/>.
+        /// Implicitly convert a <see cref="SmartRef{T}"/> to it's
+        /// !<see cref="Disposable.IsDisposed"/>.
         /// </summary>
-        /// <remarks>
-        /// If <see cref="IsOwning"/> is <see langword="false"/> the unmanaged code may have
-        /// invalidates this pointer and accessing it may have become invalid. It is in the
-        /// responsibility of the caller to verify that this reference is still valid.
-        /// </remarks>
-        public Movable<T> Movable { get; private set; }
+        /// <param name="ASmartRef">The <see cref="SmartRef{T}"/>.</param>
+        public static implicit operator bool(SmartRef<T> ASmartRef) => !ASmartRef.IsDisposed;
 
         /// <summary>
-        /// Create an owning <see cref="SmartRef{T}"/>.
+        /// Implicitly convert a <see cref="SmartRef{T}"/> to it's <see cref="Movable"/>.
         /// </summary>
-        /// <param name="ACleanup">A cleanup <see cref="Action{T}"/>.</param>
-        /// <exception cref="OutOfMemoryException">No more memory.</exception>
-        public SmartRef([CanBeNull] Action<Movable<T>> ACleanup = null)
-        {
-            IsOwning = true;
-            Movable = Marshal.AllocHGlobal(sizeof(void*));
-            Movable.SetTarget(null);
-            FCleanup = ACleanup;
-        }
+        /// <param name="ASmartRef">The <see cref="SmartRef{T}"/>.</param>
+        public static implicit operator Movable<T>(SmartRef<T> ASmartRef) => ASmartRef.Movable;
         /// <summary>
-        /// Create a shared <see cref="SmartRef{T}"/>.
+        /// Implicitly convert a <see cref="SmartRef{T}"/> to it's <see cref="Fixed{T}"/> target.
         /// </summary>
-        /// <param name="AShared">The shared <see cref="Movable{T}"/>.</param>
-        public SmartRef(Movable<T> AShared)
-        {
-            Debug.Assert(
-                AShared.IsPresent,
-                "Shared is absent.",
-                "This indicates a contract violation."
-            );
-
-            IsOwning = false;
-            Movable = AShared;
-        }
-
-        #region Disposable
-        /// <inheritdoc/>
-        protected override void Dispose(bool ADisposing)
-        {
-            if (IsOwning)
-            {
-                FCleanup?.Invoke(Movable);
-                Marshal.FreeHGlobal(Movable);
-            }
-
-            Movable = Movable<T>.Null;
-
-            if (ADisposing)
-            {
-                PropagateDispose();
-            }
-
-            base.Dispose(ADisposing);
-        }
-        #endregion
-
-        #region Weak event pattern
-        [NotNull]
-        readonly List<WeakReference<IDisposable>> FReferences =
-            new List<WeakReference<IDisposable>>();
-
-        void PropagateDispose()
-        {
-            // This will speed up the Release() calls that will happen now.
-            var refs = FReferences.ToArray();
-            FReferences.Clear();
-
-            foreach (var weakRef in refs)
-            {
-                if (weakRef.TryGetTarget(out var target))
-                {
-                    target.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Acquire a reference to this <see cref="Movable{T}"/>.
-        /// </summary>
-        /// <param name="ADisposable">The acquiring <see cref="IDisposable"/>.</param>
-        /// <exception cref="ObjectDisposedException">This instance is disposed.</exception>
-        public void Acquire([NotNull] IDisposable ADisposable)
-        {
-            Debug.Assert(
-                ADisposable != null,
-                "Disposable is null.",
-                "This indicates a contract violation."
-            );
-
-            ThrowIfDisposed();
-
-            FReferences.Add(new WeakReference<IDisposable>(ADisposable));
-        }
-        /// <summary>
-        /// Release an acquired reference to this <see cref="Movable{T}"/>.
-        /// </summary>
-        /// <param name="ADisposable">The releasing <see cref="IDisposable"/>.</param>
-        public void Release([NotNull] IDisposable ADisposable)
-        {
-            Debug.Assert(
-                ADisposable != null,
-                "Disposable is null.",
-                "This indicates a contract violation."
-            );
-
-            for (int I = 0; I < FReferences.Count; ++I)
-            {
-                if (!FReferences[I].TryGetTarget(out var target))
-                {
-                    FReferences.RemoveAt(I);
-                    --I;
-                    continue;
-                }
-
-                if (ReferenceEquals(target, ADisposable))
-                {
-                    FReferences.RemoveAt(I);
-                    return;
-                }
-            }
-        }
-        #endregion
+        /// <param name="ASmartRef">The <see cref="SmartRef{T}"/>.</param>
+        public static implicit operator Fixed<T>(SmartRef<T> ASmartRef) => ASmartRef.Movable.Target;
     }
     // ReSharper restore errors
 }

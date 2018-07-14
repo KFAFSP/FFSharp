@@ -39,9 +39,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Native\FixedTests.cs" />
-    <Compile Include="Native\MovableTests.cs" />
-    <Compile Include="Native\SmartRefTests.cs" />
+    <Compile Include="Managed\Dictionary.cs" />
+    <Compile Include="Managed\FFmpegFixture.cs" />
+    <Compile Include="Managed\SmartRefHolderBase.cs" />
+    <Compile Include="Native\Fixed.cs" />
+    <Compile Include="Native\Movable.cs" />
+    <Compile Include="Native\SmartRef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,5 +58,6 @@
       <Name>FFSharp</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

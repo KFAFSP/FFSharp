@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
@@ -11,6 +12,7 @@ namespace FFSharp
     /// </summary>
     [PublicAPI]
     [Serializable]
+    [ExcludeFromCodeCoverage]
     public class FFmpegException : Exception
     {
         const string C_Message = "Error in the FFmpeg submodule.";

@@ -42,15 +42,18 @@
   <ItemGroup>
     <Compile Include="BadAllocationException.cs" />
     <Compile Include="FFmpegError.cs" />
-    <Compile Include="FFmpegHelper.cs" />
     <Compile Include="FFmpegException.cs" />
+    <Compile Include="FFmpegHelper.cs" />
+    <Compile Include="LibraryLoader.cs" />
     <Compile Include="Managed\DelegateMapEnumerator.cs" />
     <Compile Include="Managed\Dictionary.cs" />
     <Compile Include="Managed\EnumeratorExtensions.cs" />
     <Compile Include="Managed\MapEnumerator.cs" />
     <Compile Include="Managed\SmartRefHolderBase.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Native\AVDictionary.cs" />
     <Compile Include="Native\AVDictionaryFlags.cs" />
+    <Compile Include="Native\IntPtrExtensions.cs" />
     <Compile Include="Native\Movable.cs" />
     <Compile Include="Native\Fixed.cs" />
     <Compile Include="Native\SmartRef.cs" />
@@ -67,5 +70,6 @@
       <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

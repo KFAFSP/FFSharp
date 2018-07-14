@@ -1,9 +1,11 @@
 ﻿using System;
 
+using Unsafe = FFmpeg.AutoGen;
+
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Flags for <see cref="FFmpeg.AutoGen.AVDictionary"/>-related function family.
+    /// Flags for <see cref="Unsafe.AVDictionary"/>-related function family.
     /// </summary>
     [Flags]
     internal enum AVDictionaryFlags
@@ -16,28 +18,30 @@ namespace FFSharp.Native
         /// <summary>
         /// Match key case-sesnsitive.
         /// </summary>
-        MatchCase = FFmpeg.AutoGen.ffmpeg.AV_DICT_MATCH_CASE,
+        MatchCase = Unsafe.ffmpeg.AV_DICT_MATCH_CASE,
         /// <summary>
         /// Match key until end of needle instead of haystack.
         /// </summary>
-        IgnoreSuffix = FFmpeg.AutoGen.ffmpeg.AV_DICT_IGNORE_SUFFIX,
+        IgnoreSuffix = Unsafe.ffmpeg.AV_DICT_IGNORE_SUFFIX,
 
         /// <summary>
-        /// Do not copy the key string, but still free it on error.
+        /// Assume ownership of the keys, only valid if they were allocated with the
+        /// <see cref="Unsafe.ffmpeg.av_malloc(ulong)"/> family.
         /// </summary>
-        DoNotStrdupKeys = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_STRDUP_KEY,
+        DoNotStrdupKeys = Unsafe.ffmpeg.AV_DICT_DONT_STRDUP_KEY,
         /// <summary>
-        /// Do not copy the value string, but still free it on error.
+        /// Assume ownership of the values, only valid if they were allocated with the
+        /// <see cref="Unsafe.ffmpeg.av_malloc(ulong)"/> family.
         /// </summary>
-        DoNotStrdupValues = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_STRDUP_VAL,
+        DoNotStrdupValues = Unsafe.ffmpeg.AV_DICT_DONT_STRDUP_VAL,
 
         /// <summary>
         /// Do not overwrite values that already exist.
         /// </summary>
-        DoNotOverwrite = FFmpeg.AutoGen.ffmpeg.AV_DICT_DONT_OVERWRITE,
+        DoNotOverwrite = Unsafe.ffmpeg.AV_DICT_DONT_OVERWRITE,
         /// <summary>
         /// Append to existing values instead of overwriting.
         /// </summary>
-        Append = FFmpeg.AutoGen.ffmpeg.AV_DICT_APPEND
+        Append = Unsafe.ffmpeg.AV_DICT_APPEND
     }
 }

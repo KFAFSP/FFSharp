@@ -1,0 +1,3 @@
+# Ignore Zeranoe binaries.
+*.dll
+*.exe

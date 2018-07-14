@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
+
+using Whetstone.Contracts;
 
 namespace FFSharp.Managed
 {
@@ -12,11 +14,15 @@ namespace FFSharp.Managed
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
-    internal abstract class MapEnumerator<TIn, TOut> : IEnumerator<TOut>
+    [ExcludeFromCodeCoverage]
+    internal abstract class MapEnumerator<TIn, TOut> : Disposable,
+        IEnumerator<TOut>
     {
         [NotNull]
         readonly IEnumerator<TIn> FParent;
-        Lazy<TOut> FCurrent;
+
+        bool FComputed;
+        TOut FCurrent;
 
         /// <summary>
         /// Create a new <see cref="MapEnumerator{TIn,TOut}"/> instance.
@@ -31,6 +37,7 @@ namespace FFSharp.Managed
             );
 
             FParent = AParent;
+            FComputed = false;
         }
 
         /// <summary>
@@ -44,11 +51,13 @@ namespace FFSharp.Managed
         /// </remarks>
         protected abstract TOut Map(TIn AIn);
 
-        #region IDisposable
+        #region Disposable overrides
         /// <inheritdoc />
-        public void Dispose()
+        protected override void Dispose(bool ADisposing)
         {
             FParent.Dispose();
+
+            base.Dispose(ADisposing);
         }
         #endregion
 
@@ -57,23 +66,32 @@ namespace FFSharp.Managed
         public bool MoveNext()
         {
             if (!FParent.MoveNext())
-            {
                 return false;
-            }
 
-            // Use a Lazy<> so that values can be skipped without effort, but the mapping does not
-            // get applied more than once.
-            FCurrent = new Lazy<TOut>(() => Map(FParent.Current));
+            FComputed = false;
             return true;
         }
         /// <inheritdoc />
         public void Reset()
         {
             FParent.Reset();
+            FComputed = false;
         }
 
         /// <inheritdoc />
-        public TOut Current => FCurrent.Value;
+        public TOut Current
+        {
+            get
+            {
+                if (!FComputed)
+                {
+                    FCurrent = Map(FParent.Current);
+                    FComputed = true;
+                }
+
+                return FCurrent;
+            }
+        }
         #endregion
 
         #region IEnumerator

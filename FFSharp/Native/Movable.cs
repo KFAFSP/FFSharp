@@ -1,49 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Non-generic helper class for the <see cref="Movable{T}"/> struct.
-    /// </summary>
-    // ReSharper disable errors
-    internal static class Movable
-    {
-        /// <summary>
-        /// Initialize a null pointer <see cref="Movable{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">The pointed-tp type.</typeparam>
-        /// <returns>A null pointer <see cref="Movable{T}"/>.</returns>
-        public static Movable<T> Null<T>() where T : unmanaged => default;
-
-        /// <summary>
-        /// Initialize a <see cref="Movable{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">The pointed-to type.</typeparam>
-        /// <param name="APtr">The pointer.</param>
-        /// <returns>A <see cref="Movable{T}"/> wrapping <paramref name="APtr"/>.</returns>
-        public static unsafe Movable<T> Of<T>([CanBeNull] T** APtr)
-            where T : unmanaged
-        {
-            return new Movable<T>(APtr);
-        }
-    }
-    // ReSharper restore errors
-
-    /// <summary>
-    /// Wraps a relocatable pointer to a native struct.
+    /// Value type wrapping a relocatable pointer to a native struct.
     /// </summary>
     /// <typeparam name="T">The pointed-to struct type.</typeparam>
     /// <remarks>
     /// Use this instead of a <c>T**</c> pointer to better represent the intention and to statically
-    /// check contracts.
+    /// check contracts. Allows passing pointers through safe contexts.
     /// </remarks>
     // ReSharper disable errors
     internal readonly unsafe struct Movable<T> :
         IEquatable<Movable<T>>
+        // cannot implement IEquatable<T**>
         where T : unmanaged
     {
         /// <summary>
@@ -60,16 +33,58 @@ namespace FFSharp.Native
             Raw = ARaw;
         }
 
+        /// <summary>
+        /// Get the non-<see langword="null"/> value of this or a default.
+        /// </summary>
+        /// <param name="ADefault">The default <see cref="Movable{T}"/>.</param>
+        /// <returns>
+        /// This if <see cref="IsNull"/> is <see langword="false"/>; otherwise
+        /// <paramref name="ADefault"/>.
+        /// </returns>
+        [Pure]
+        public Movable<T> Or(Movable<T> ADefault) => !IsNull ? this : ADefault;
+        /// <summary>
+        /// Get the present <see cref="Target"/> of this or a default.
+        /// </summary>
+        /// <param name="ADefault">The default target <see cref="Fixed{T}"/>.</param>
+        /// <returns>
+        /// This if <see cref="IsPresent"/> is <see langword="true"/>; otherwise
+        /// <paramref name="ADefault"/>.
+        /// </returns>
+        [Pure]
+        public Fixed<T> TargetOr(Fixed<T> ADefault) => IsPresent ? new Fixed<T>(*Raw) : ADefault;
+
+        /// <summary>
+        /// Cast to a different underlying struct type.
+        /// </summary>
+        /// <typeparam name="TTo">The struct type to cast to.</typeparam>
+        /// <returns>A casted <see cref="Movable{T}"/>.</returns>
+        /// <remarks>
+        /// This cast can never fail, but cannot be checked for semantic correctness. Use only when
+        /// dynamical correctness is known.
+        /// </remarks>
+        [Pure]
+        public Movable<TTo> Cast<TTo>() where TTo : unmanaged => (TTo**) Raw;
+
         #region IEquatable<Movable<T>>
-        /// <inheritdoc/>
-        public bool Equals(Movable<T> ARef)
-        {
-            return Raw == ARef.Raw;
-        }
+        /// <inheritdoc />
+        [Pure]
+        public bool Equals(Movable<T> ARef) => Raw == ARef.Raw;
         #endregion
 
+        /// <summary>
+        /// Check whether this <see cref="Movable{T}"/> is equal to the specified pointer.
+        /// </summary>
+        /// <param name="APtr">The pointer.</param>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="Raw"/> is equal to <paramref name="APtr"/>;
+        /// otherwise <see langword="false"/>.
+        /// </returns>
+        [Pure]
+        public bool Equals(T** APtr) => Raw == APtr;
+
         #region System.Object overrides
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool Equals(object AObject)
         {
             switch (AObject)
@@ -81,64 +96,15 @@ namespace FFSharp.Native
                     return false;
             }
         }
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Address.GetHashCode();
         }
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override string ToString()
         {
-            var target = !IsNull
-                ? $" -> 0x{(IntPtr)(*Raw)}"
-                : "";
-
-            return $"<Movable:0x{Address.ToInt64():X16}{target}>";
-        }
-        #endregion
-
-        #region Convenience
-        /// <summary>
-        /// Get the non-null value of this or a default.
-        /// </summary>
-        /// <param name="ADefault">The default <see cref="Movable{T}"/>.</param>
-        /// <returns>
-        /// This if <see cref="IsNull"/> is <see langword="false"/>; otherwise
-        /// <paramref name="ADefault"/>.
-        /// </returns>
-        [Pure]
-        public Movable<T> Or(Movable<T> ADefault)
-        {
-            return !IsNull ? this : ADefault;
-        }
-        /// <summary>
-        /// Get the present <see cref="Target"/> of this or a default.
-        /// </summary>
-        /// <param name="ADefault">The default target <see cref="Fixed{T}"/>.</param>
-        /// <returns>
-        /// This if <see cref="IsPresent"/> is <see langword="true"/>; otherwise
-        /// <paramref name="ADefault"/>.
-        /// </returns>
-        [Pure]
-        public Fixed<T> TargetOr(Fixed<T> ADefault)
-        {
-            return IsPresent ? new Fixed<T>(*Raw) : ADefault;
-        }
-
-        /// <summary>
-        /// Cast to a different underlying struct type.
-        /// </summary>
-        /// <typeparam name="U">The struct type to cast to.</typeparam>
-        /// <returns>A casted <see cref="Movable{T}"/>.</returns>
-        /// <remarks>
-        /// This cast can never fail, but cannot be checked for semantic correctness. Use only when
-        /// dynamical correctness is known.
-        /// </remarks>
-        [Pure]
-        public Movable<U> Cast<U>()
-            where U : unmanaged
-        {
-            return (U**)Raw;
+            return $"Movable<{typeof(T).Name}>(0x{Address.ToUInt64():X16})";
         }
         #endregion
 
@@ -152,48 +118,23 @@ namespace FFSharp.Native
         /// </summary>
         public IntPtr Address => (IntPtr)Raw;
 
-        #region Assertions
         /// <summary>
-        /// Assert that <see cref="Raw"/> and <see cref="Target"/> are not <see langword="null"/>.
+        /// Set the target pointer.
         /// </summary>
-        [DebuggerHidden]
-        [Conditional("DEBUG")]
-        [ExcludeFromCodeCoverage]
-        public void AssertPresent()
-        {
-            Debug.Assert(
-                IsPresent,
-                "Movable target is absent.",
-                "This indicates a severe logic error in the code."
-            );
-        }
-        /// <summary>
-        /// Assert that <see cref="Raw"/> is not <see langword="null"/>.
-        /// </summary>
-        [DebuggerHidden]
-        [Conditional("DEBUG")]
-        [ExcludeFromCodeCoverage]
-        public void AssertNotNull()
+        /// <param name="ATarget">The target <see cref="Fixed{T}"/>.</param>
+        /// <remarks>
+        /// Calling this method when <see cref="IsNull"/> is <see langword="true"/> results in
+        /// undefined behaviour!
+        /// </remarks>
+        public void SetTarget(Fixed<T> ATarget)
         {
             Debug.Assert(
                 !IsNull,
                 "Movable is null.",
                 "This indicates a severe logic error in the code."
             );
-        }
-        #endregion
 
-        /// <summary>
-        /// Set the target pointer.
-        /// </summary>
-        /// <param name="ATarget">The target pointer.</param>
-        /// <remarks>
-        /// This method is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
-        /// </remarks>
-        public void SetTarget([CanBeNull] T* ATarget)
-        {
-            AssertNotNull();
-            *Raw = ATarget;
+            *Raw = ATarget.Raw;
         }
 
         /// <summary>
@@ -201,20 +142,25 @@ namespace FFSharp.Native
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
+        /// Getting this property when <see cref="IsNull"/> is <see langword="true"/> results in
+        /// undefined behaviour!
         /// </para>
         /// <para>
-        /// To set the target, use <see cref="SetTarget(T*)"/>. Setters are not allowed on immutable
-        /// objects, so one has to use a method instead.
+        /// To set the target, use <see cref="SetTarget(Fixed{T})"/>. Setters are not allowed on
+        /// immutable structs, so one has to use a method instead.
         /// </para>
         /// </remarks>
-        [CanBeNull]
-        public T* Target
+        public Fixed<T> Target
         {
             get
             {
-                AssertNotNull();
-                return *Raw;
+                Debug.Assert(
+                    !IsNull,
+                    "Movable is null.",
+                    "This indicates a severe logic error in the code."
+                );
+
+                return new Fixed<T>(*Raw);
             }
         }
 
@@ -229,20 +175,8 @@ namespace FFSharp.Native
         /// Only <see langword="true"/> if not <see cref="IsNull"/> and <see cref="Target"/> not
         /// <see langword="null"/>.
         /// </remarks>
-        public bool IsPresent => !IsNull && Target != null;
+        public bool IsPresent => !IsNull && !Target.IsNull;
 
-        /// <summary>
-        /// Get the target pointer as a <see cref="Fixed{T}"/>.
-        /// </summary>
-        /// <remarks>
-        /// This property is only safe to use if <see cref="IsNull"/> is <see langword="false"/>.
-        /// </remarks>
-        public Fixed<T> Fixed
-        {
-            get => new Fixed<T>(Target);
-        }
-
-        #region Operator overloads
         /// <summary>
         /// Check pointer equality for two <see cref="Movable{T}"/> structs.
         /// </summary>
@@ -302,6 +236,7 @@ namespace FFSharp.Native
         /// <param name="AMovable">The <see cref="Movable{T}"/>.</param>
         [CanBeNull]
         public static implicit operator T**(Movable<T> AMovable) => AMovable.Raw;
+
         /// <summary>
         /// Implicitly convert an <see cref="IntPtr"/> to a <see cref="Movable{T}"/>.
         /// </summary>
@@ -313,7 +248,6 @@ namespace FFSharp.Native
         /// </summary>
         /// <param name="AMovable">The <see cref="Movable{T}"/>.</param>
         public static implicit operator IntPtr(Movable<T> AMovable) => AMovable.Address;
-        #endregion
     }
     // ReSharper restore errors
 }

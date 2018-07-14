@@ -1,49 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Non-generic helper class for the <see cref="Fixed{T}"/> struct.
-    /// </summary>
-    // ReSharper disable errors
-    internal static class Fixed
-    {
-        /// <summary>
-        /// Initialize a <see langword="null"/> <see cref="Fixed{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">The pointed-tp type.</typeparam>
-        /// <returns>A <see langword="null"/> <see cref="Fixed{T}"/>.</returns>
-        public static Fixed<T> Null<T>() where T : unmanaged => default;
-
-        /// <summary>
-        /// Initialize a <see cref="Fixed{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">The pointed-to type.</typeparam>
-        /// <param name="APtr">The pointer.</param>
-        /// <returns>A <see cref="Fixed{T}"/> wrapping <paramref name="APtr"/>.</returns>
-        public static unsafe Fixed<T> Of<T>([CanBeNull] T* APtr)
-            where T : unmanaged
-        {
-            return new Fixed<T>(APtr);
-        }
-    }
-    // ReSharper restore errors
-
-    /// <summary>
-    /// Wraps a fixed pointer to a native struct.
+    /// Value type wrapping a pointer to a native struct.
     /// </summary>
     /// <typeparam name="T">The pointed-to struct type.</typeparam>
     /// <remarks>
     /// Use this instead of a <c>T*</c> pointer to better represent the intention and to statically
-    /// check contracts.
+    /// check contracts. Allows passing pointers through safe contexts.
     /// </remarks>
     // ReSharper disable errors
     internal readonly unsafe struct Fixed<T> :
         IEquatable<Fixed<T>>
+        // cannot implement IEquatable<T*>
         where T : unmanaged
     {
         /// <summary>
@@ -52,7 +25,7 @@ namespace FFSharp.Native
         public static readonly Fixed<T> Null = default;
 
         /// <summary>
-        /// Initialize a <see cref="Fixed{T}"/>.
+        /// Initialize a <see cref="Fixed{T}"/> with a pointer.
         /// </summary>
         /// <param name="ARaw">The target pointer.</param>
         public Fixed([CanBeNull] T* ARaw)
@@ -60,16 +33,47 @@ namespace FFSharp.Native
             Raw = ARaw;
         }
 
+        /// <summary>
+        /// Get the non-<see langword="null"/> value of this or a default.
+        /// </summary>
+        /// <param name="ADefault">The default <see cref="Fixed{T}"/>.</param>
+        /// <returns>
+        /// This if <see cref="IsNull"/> is <see langword="false"/>; otherwise
+        /// <paramref name="ADefault"/>.
+        /// </returns>
+        [Pure]
+        public Fixed<T> Or(Fixed<T> ADefault) => !IsNull ? this : ADefault;
+        /// <summary>
+        /// Cast to a different pointed-to struct type.
+        /// </summary>
+        /// <typeparam name="TTo">The struct type to cast to.</typeparam>
+        /// <returns>A casted <see cref="Fixed{T}"/>.</returns>
+        /// <remarks>
+        /// This cast can never fail, but cannot be checked for semantic correctness. Use only when
+        /// dynamical correctness is known.
+        /// </remarks>
+        [Pure]
+        public Fixed<TTo> Cast<TTo>() where TTo : unmanaged => (TTo*)Raw;
+
         #region IEquatable<Fixed<T>>
-        /// <inheritdoc/>
-        public bool Equals(Fixed<T> AFixed)
-        {
-            return Raw == AFixed.Raw;
-        }
+        /// <inheritdoc />
+        [Pure]
+        public bool Equals(Fixed<T> AFixed) => Raw == AFixed.Raw;
         #endregion
 
+        /// <summary>
+        /// Check whether this <see cref="Fixed{T}"/> is equal to the specified pointer.
+        /// </summary>
+        /// <param name="APtr">The pointer.</param>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="Raw"/> is equal to <paramref name="APtr"/>;
+        /// otherwise <see langword="false"/>.
+        /// </returns>
+        [Pure]
+        public bool Equals(T* APtr) => Raw == APtr;
+
         #region System.Object overrides
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool Equals(object AObject)
         {
             switch (AObject)
@@ -81,51 +85,20 @@ namespace FFSharp.Native
                     return false;
             }
         }
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Address.GetHashCode();
         }
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override string ToString()
         {
-            return $"<Fixed:0x{Address.ToInt64():X16}>";
-        }
-        #endregion
-
-        #region Convenience
-        /// <summary>
-        /// Get the non-<see langword="null"/> value of this or a default.
-        /// </summary>
-        /// <param name="ADefault">The default <see cref="Fixed{T}"/>.</param>
-        /// <returns>
-        /// This if <see cref="IsNull"/> is <see langword="false"/>; otherwise
-        /// <paramref name="ADefault"/>.
-        /// </returns>
-        [Pure]
-        public Fixed<T> Or(Fixed<T> ADefault)
-        {
-            return !IsNull ? this : ADefault;
-        }
-        /// <summary>
-        /// Cast to a different underlying struct type.
-        /// </summary>
-        /// <typeparam name="U">The struct type to cast to.</typeparam>
-        /// <returns>A casted <see cref="Fixed{T}"/>.</returns>
-        /// <remarks>
-        /// This cast can never fail, but cannot be checked for semantic correctness. Use only when
-        /// dynamical correctness is known.
-        /// </remarks>
-        [Pure]
-        public Fixed<U> Cast<U>()
-            where U : unmanaged
-        {
-            return (U*)Raw;
+            return $"Fixed<{typeof(T).Name}>(0x{Address.ToUInt64():X16})";
         }
         #endregion
 
         /// <summary>
-        /// Get the pointer to the struct.
+        /// Get the underlying pointer.
         /// </summary>
         [CanBeNull]
         public T* Raw { get; }
@@ -134,44 +107,32 @@ namespace FFSharp.Native
         /// </summary>
         public IntPtr Address => (IntPtr)Raw;
 
-        #region Assertions
-        /// <summary>
-        /// Assert that <see cref="Raw"/> is not <see langword="null"/>.
-        /// </summary>
-        [DebuggerHidden]
-        [Conditional("DEBUG")]
-        [ExcludeFromCodeCoverage]
-        public void AssertNotNull()
-        {
-            Debug.Assert(
-                !IsNull,
-                "Fixed is null.",
-                "This indicates a severe logic error in the code."
-            );
-        }
-        #endregion
-
         /// <summary>
         /// Get a value indicating whether <see cref="Raw"/> is <see langword="null"/>.
         /// </summary>
         public bool IsNull => Raw == null;
 
         /// <summary>
-        /// Get the pointed-to struct as a C# reference.
+        /// Get a modifiable reference to the pointed-to struct.
         /// </summary>
         /// <remarks>
-        /// Only access this property if <see cref="IsNull"/> is <see langword="false"/>!
+        /// Getting this property when <see cref="IsNull"/> is <see langword="true"/> results in
+        /// undefined behaviour!
         /// </remarks>
         public ref T AsRef
         {
             get
             {
-                AssertNotNull();
+                Debug.Assert(
+                    !IsNull,
+                    "Fixed is null.",
+                    "This indicates a severe logic error in the code."
+                );
+
                 return ref *Raw;
             }
         }
 
-        #region Operator overloads
         /// <summary>
         /// Check pointer equality for two <see cref="Fixed{T}"/> structs.
         /// </summary>
@@ -194,7 +155,7 @@ namespace FFSharp.Native
         public static bool operator !=(Fixed<T> ALhs, Fixed<T> ARhs) => !ALhs.Equals(ARhs);
 
         /// <summary>
-        /// Check pointer equality for a <see cref="Fixed{T}"/> struct.
+        /// Check pointer equality for a <see cref="Fixed{T}"/> struct and a pointer.
         /// </summary>
         /// <param name="ALhs">The left hand side.</param>
         /// <param name="ARhs">The right hand side.</param>
@@ -202,9 +163,9 @@ namespace FFSharp.Native
         /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
         /// to the same struct; otherwise <see langword="false"/>.
         /// </returns>
-        public static bool operator ==(Fixed<T> ALhs, [CanBeNull] T* ARhs) => ALhs.Raw == ARhs;
+        public static bool operator ==(Fixed<T> ALhs, [CanBeNull] T* ARhs) => ALhs.Equals(ARhs);
         /// <summary>
-        /// Check pointer inequality for a <see cref="Fixed{T}"/> struct.
+        /// Check pointer inequality for a <see cref="Fixed{T}"/> struct and a pointer.
         /// </summary>
         /// <param name="ALhs">The left hand side.</param>
         /// <param name="ARhs">The right hand side.</param>
@@ -212,7 +173,7 @@ namespace FFSharp.Native
         /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
         /// to a different struct; otherwise <see langword="false"/>.
         /// </returns>
-        public static bool operator !=(Fixed<T> ALhs, [CanBeNull] T* ARhs) => ALhs.Raw != ARhs;
+        public static bool operator !=(Fixed<T> ALhs, [CanBeNull] T* ARhs) => !ALhs.Equals(ARhs);
 
         /// <summary>
         /// Implicitly convert a <see cref="Fixed{T}"/> to it's !<see cref="IsNull"/>.
@@ -231,6 +192,7 @@ namespace FFSharp.Native
         /// <param name="AFixed">The <see cref="Fixed{T}"/>.</param>
         [CanBeNull]
         public static implicit operator T*(Fixed<T> AFixed) => AFixed.Raw;
+
         /// <summary>
         /// Implicitly convert an <see cref="IntPtr"/> to a <see cref="Fixed{T}"/>.
         /// </summary>
@@ -241,7 +203,6 @@ namespace FFSharp.Native
         /// </summary>
         /// <param name="AFixed">The <see cref="Fixed{T}"/>.</param>
         public static implicit operator IntPtr(Fixed<T> AFixed) => AFixed.Address;
-        #endregion
     }
     // ReSharper restore errors
 }

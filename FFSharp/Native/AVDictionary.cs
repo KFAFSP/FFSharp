@@ -50,7 +50,7 @@ namespace FFSharp.Native
             // No null-check necessary.
 
             return Unsafe.ffmpeg.av_dict_copy(ADst, ASrc, (int) AFlags)
-                .CheckFFmpeg("Error copying values.");
+                .ToResult("Error copying values.");
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
             Debug.Assert(
-                (AFlags & C_ProhibitedFlags) != AVDictionaryFlags.None,
+                (AFlags & C_ProhibitedFlags) == AVDictionaryFlags.None,
                 "Flag is prohibited.",
                 "Some provided flag (DoNotStrdupKeys) is invalid on marshalled strings and " +
                 "therefore prohibited. This indicates a contract violation."
@@ -202,7 +202,7 @@ namespace FFSharp.Native
                 &buffer,
                 AKeyValSep,
                 APairsSep
-            ).CheckFFmpeg("Error building string.");
+            ).ToResult("Error building string.");
 
             if (!getResult)
             {
@@ -282,7 +282,7 @@ namespace FFSharp.Native
                 AKeyValSep,
                 APairsSep,
                 (int)AFlags
-            ).CheckFFmpeg("Error parsing string.");
+            ).ToResult("Error parsing string.");
         }
 
         /// <summary>
@@ -297,6 +297,7 @@ namespace FFSharp.Native
         /// Supplying the <see cref="AVDictionaryFlags.DoNotStrdupKeys"/> or the
         /// <see cref="AVDictionaryFlags.DoNotStrdupValues"/> flag is invalid behaviour.
         /// </remarks>
+        [MustUseReturnValue]
         public static Result Set(
             Movable<Unsafe.AVDictionary> ADict,
             [NotNull] string AKey,
@@ -317,7 +318,7 @@ namespace FFSharp.Native
                 "error in the code."
             );
             Debug.Assert(
-                (AFlags & C_ProhibitedFlags) != AVDictionaryFlags.None,
+                (AFlags & C_ProhibitedFlags) == AVDictionaryFlags.None,
                 "Flag is prohibited.",
                 "Some provided flags (DoNotStrdup family) are invalid on marshalled strings and " +
                 "therefore prohibited. This indicates a logic error in the code."
@@ -327,7 +328,7 @@ namespace FFSharp.Native
             AFlags &= ~C_ProhibitedFlags;
 
             return Unsafe.ffmpeg.av_dict_set(ADict, AKey, AValue, (int)AFlags)
-                .CheckFFmpeg("Error setting value.");
+                .ToResult("Error setting value.");
         }
 
         /// <summary>

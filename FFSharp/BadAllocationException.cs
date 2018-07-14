@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
@@ -12,6 +13,7 @@ namespace FFSharp
     /// </summary>
     [PublicAPI]
     [Serializable]
+    [ExcludeFromCodeCoverage]
     public sealed class BadAllocationException : Exception
     {
         const string C_Message = "Allocation of \"{0}\" failed.";
