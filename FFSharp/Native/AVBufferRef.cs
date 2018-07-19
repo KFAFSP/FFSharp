@@ -160,7 +160,7 @@ namespace FFSharp.Native
         /// <param name="ABuf">The <see cref="Unsafe.AVBufferRef"/>.</param>
         /// <returns><see cref="Result"/> of the operation.</returns>
         /// <remarks>
-        /// If <paramref name="ABuf"/> is not writable, create a copy that is writable.
+        /// If <paramref name="ABuf"/> is not writable, creates a copy that is writable.
         /// </remarks>
         [MustUseReturnValue]
         public static Result MakeWritable(Movable<Unsafe.AVBufferRef> ABuf)

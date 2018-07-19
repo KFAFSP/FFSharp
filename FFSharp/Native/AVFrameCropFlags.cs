@@ -5,10 +5,11 @@ using Unsafe = FFmpeg.AutoGen;
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Flags for the <see cref="Unsafe.AVBufferRef"/>-related function family.
+    /// Flags for the
+    /// <see cref="Unsafe.ffmpeg.av_frame_apply_cropping(Unsafe.AVFrame*, int)"/> function.
     /// </summary>
     [Flags]
-    internal enum AVBufferFlags
+    internal enum AVFrameCropFlags
     {
         /// <summary>
         /// No flags.
@@ -16,9 +17,8 @@ namespace FFSharp.Native
         None = 0,
 
         /// <summary>
-        /// Buffer is read-only.
+        /// Allow producing unaligned output pointers.
         /// </summary>
-        ReadOnly = Unsafe.ffmpeg.AV_BUFFER_FLAG_READONLY
+        Unaligned = 1 << 0 // AV_FRAME_CROP_UNALIGNED
     }
-    // ReSharper restore errors
 }

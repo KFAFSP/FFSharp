@@ -5,7 +5,7 @@ using Unsafe = FFmpeg.AutoGen;
 namespace FFSharp.Native
 {
     /// <summary>
-    /// Flags for <see cref="Unsafe.AVDictionary"/>-related function family.
+    /// Flags for the <see cref="Unsafe.AVDictionary"/>-related function family.
     /// </summary>
     [Flags]
     internal enum AVDictionaryFlags
