@@ -23,8 +23,12 @@ Most important goals are the decoding pipeline for MPEG2 in software and with DX
 
 - [ ] AVUtil lib
   - [x] AVDictionary
-  - [ ] AVPacket
-  - [ ] AVFrame
+  - [x] AVFrame
+  - [x] AVBufferRef
+  - [ ] AVOption (on hold)
+  - [ ] AVTreeNode (**FFmpeg.AutoGen**: no bindings)
+  
+- [ ] AVIO lib
   - [ ] AVIOContext
   
 - [ ] AVFormat lib
@@ -36,6 +40,7 @@ Most important goals are the decoding pipeline for MPEG2 in software and with DX
 - [ ] AVCodec lib
   - [ ] AVCodec
   - [ ] AVCodecContext
+  - [ ] AVPacket
   - [ ] AVHWDeviceContext
 
 ### Managed
