@@ -11,6 +11,250 @@ namespace FFSharp.Native
     [TestFixture]
     [Description("Testing the Movable type itself.")]
     [Category("Native")]
+    [TestOf(typeof(Movable))]
+    internal sealed unsafe class MovableTests
+    {
+        static readonly Movable _FPtrOne = new Movable((void**)1);
+        static readonly Movable _FPtrTwo = new Movable((void**)2);
+
+        [Test]
+        [Description("Default constructor initializes a null Movable.")]
+        public void Constructor_Default_IsNull()
+        {
+            var test = new Movable();
+
+            Assert.That(test.IsNull, Is.True);
+        }
+
+        [Test]
+        [Description("Init constructor initializes a Movable wrapping the specified pointer.")]
+        public void Constructor_Init_WrapsPointer()
+        {
+            void* i;
+            var test = new Movable(&i);
+
+            Assert.That(test.Raw == &i);
+        }
+
+        [Test]
+        [Description("Or on null Movable returns the default.")]
+        public void Or_OnNull_ReturnsDefault()
+        {
+            var test = new Movable();
+
+            Assert.That(test.Or(_FPtrOne), Is.EqualTo(_FPtrOne));
+        }
+
+        [Test]
+        [Description("Or on non-null Movable returns this.")]
+        public void Or_OnNonNull_ReturnsThis()
+        {
+            var test = _FPtrOne;
+
+            Assert.That(test.Or(_FPtrTwo), Is.EqualTo(_FPtrOne));
+        }
+
+        [Test]
+        [Description("TargetOr on null Movable returns the default.")]
+        public void TargetOr_OnNull_ReturnsDefault()
+        {
+            var test = new Movable();
+            var def = new Fixed((void*)1);
+
+            Assert.That(test.TargetOr(def), Is.EqualTo(def));
+        }
+
+        [Test]
+        [Description("TargetOr on absent Movable returns the default.")]
+        public void TargetOr_OnAbsent_ReturnsDefault()
+        {
+            void* i = null;
+            var test = new Movable(&i);
+            var def = new Fixed((void*)1);
+
+            Assert.That(test.TargetOr(def), Is.EqualTo(def));
+        }
+
+        [Test]
+        [Description("TargetOr on present Movable returns this.")]
+        public void TargetOr_OnPresent_ReturnsTarget()
+        {
+            int i;
+            void* j = &i;
+            var test = new Movable(&j);
+            var def = new Fixed((void*)1);
+
+            Assert.That(test.TargetOr(def).Raw == j);
+        }
+
+        [Test]
+        [Description("Cast does not change the address.")]
+        public void Cast_DoesNotChangeAddress()
+        {
+            var test = _FPtrOne.Cast<bool>();
+
+            Assert.That(test.Address, Is.EqualTo(_FPtrOne.Address));
+        }
+
+        [Test]
+        [Description("Equals on Movable and pointer is correct.")]
+        public void Equals_MovablePtr_Correct()
+        {
+            var test = _FPtrOne;
+
+            Assert.That(test.Equals(_FPtrTwo.Raw), Is.False);
+            Assert.That(test != _FPtrTwo.Raw && !(test == _FPtrTwo.Raw));
+
+            Assert.That(test.Equals(test.Raw), Is.True);
+            Assert.That(test == test.Raw && !(test != test.Raw));
+        }
+
+        [TestCaseSource(nameof(MovableAnyTestCases))]
+        [Description("Equals on Movable and any is correct.")]
+        public bool Equals_MovableAny_Correct(object AMovable, object AOther)
+        {
+            return AMovable.Equals(AOther);
+        }
+
+        [Test]
+        [Description("GetHashCode returns the hash of Address.")]
+        public void GetHashCode_ReturnsAddressHash()
+        {
+            Assert.That(_FPtrOne.GetHashCode(), Is.EqualTo(_FPtrOne.Address.GetHashCode()));
+        }
+
+        [Test]
+        [Description("ToString returns an address literal.")]
+        public void ToString_ReturnsAddressLiteral()
+        {
+            void* i = null;
+            var test = new Movable(&i);
+            var addr = test.Address.ToUInt64().ToString("X16");
+
+            Assert.That(test.ToString(), Is.EqualTo($"Movable<void>(0x{addr})"));
+        }
+
+        [Test]
+        [Description("Getting Address returns the address of the pointer.")]
+        public void GetAddress_ReturnsAddress()
+        {
+            Assert.That(_FPtrOne.Address, Is.EqualTo((IntPtr)1));
+        }
+
+        [Test]
+        [Description("SetTarget on non-null Movable changes the target pointer.")]
+        public void SetTarget_OnNonNull_ChangesTarget()
+        {
+            int i;
+            void* j = null;
+            var test = new Movable(&j);
+
+            test.SetTarget(&i);
+            Assert.That(test.Target.Raw == &i);
+        }
+
+        [Test]
+        [Description("Getting IsNull on null returns true.")]
+        public void GetIsNull_OnNull_ReturnsTrue()
+        {
+            var test = new Movable(null);
+
+            Assert.That(test.IsNull, Is.True);
+        }
+
+        [Test]
+        [Description("Getting IsNull on non-null returns false.")]
+        public void GetIsNull_OnNonNull_ReturnsFalse()
+        {
+            Assert.That(_FPtrOne.IsNull, Is.False);
+        }
+
+        [Test]
+        [Description("Implicit cast from pointer wraps the pointer as a Fixed.")]
+        public void ImplicitCast_FromPointer_WrapsPointer()
+        {
+            void* i;
+            Movable test = &i;
+
+            Assert.That(test.Raw == &i);
+        }
+
+        [Test]
+        [Description("Implicit cast to pointer returns Raw.")]
+        public void ImplicitCast_ToPointer_ReturnsRaw()
+        {
+            void* i;
+            void** j = new Movable(&i);
+
+            Assert.That(j == &i);
+        }
+
+        [Test]
+        [Description("Implicit cast to bool on null Movable returns false.")]
+        public void ImplicitCast_ToBoolOnNull_ReturnsFalse()
+        {
+            bool test = new Movable();
+
+            Assert.That(test, Is.False);
+        }
+
+        [Test]
+        [Description("Implicit cast to bool on non-null Movable returns true.")]
+        public void ImplicitCast_ToBoolOnNonNull_ReturnsTrue()
+        {
+            bool test = _FPtrOne;
+
+            Assert.That(test, Is.True);
+        }
+
+        [Test]
+        [Description("Implicit cast to IntPtr returns Address.")]
+        public void ImplicitCast_ToIntPtr_ReturnsAddress()
+        {
+            IntPtr test = _FPtrOne;
+
+            Assert.That(test, Is.EqualTo(_FPtrOne.Address));
+        }
+
+        [Test]
+        [Description("Implicit cast from IntPtr makes and wraps the pointer.")]
+        public void ImplicitCast_FromIntPtr_MakesAndWrapsPointer()
+        {
+            Movable test = (IntPtr)1;
+
+            Assert.That(test, Is.EqualTo(_FPtrOne));
+        }
+
+        [TestCaseSource(nameof(MovableAnyTestCases))]
+        [Description("Binary equals operator on Movables is correct.")]
+        public bool EqOp_MovableMocable_Correct(Movable ALeft, Movable ARight)
+        {
+            return ALeft == ARight && !(ALeft != ARight);
+        }
+
+        [UsedImplicitly]
+        public static IEnumerable MovableAnyTestCases
+        {
+            get
+            {
+                yield return new TestCaseData(new Movable(), new Movable())
+                    .Returns(true)
+                    .SetDescription("Null and null is true.");
+                yield return new TestCaseData(_FPtrOne, _FPtrOne)
+                    .Returns(true)
+                    .SetDescription("Pointer and same pointer is true.");
+                yield return new TestCaseData(_FPtrOne, _FPtrTwo)
+                    .Returns(false)
+                    .SetDescription("Pointer and different pointer is false.");
+            }
+        }
+    }
+    // ReSharper restore errors
+
+    // ReSharper disable errors
+    [TestFixture]
+    [Description("Testing the Movable<T> type itself.")]
+    [Category("Native")]
     [TestOf(typeof(Movable<>))]
     internal sealed unsafe class MovableTTests
     {
@@ -159,7 +403,7 @@ namespace FFSharp.Native
         [Description("Getting IsNull on null returns true.")]
         public void GetIsNull_OnNull_ReturnsTrue()
         {
-            var test = new Movable<int>();
+            var test = new Movable<int>(null);
 
             Assert.That(test.IsNull, Is.True);
         }
