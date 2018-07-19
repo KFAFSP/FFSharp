@@ -47,7 +47,13 @@ namespace FFSharp.Native
             AVDictionaryFlags AFlags = AVDictionaryFlags.None
         )
         {
-            // No null-check necessary.
+            Debug.Assert(
+                !ADst.IsNull,
+                "Dst is null.",
+                "This indicates a contract violation."
+            );
+
+            // No present-check necessary.
 
             return Unsafe.ffmpeg.av_dict_copy(ADst, ASrc, (int) AFlags)
                 .ToResult("Error copying values.");
@@ -71,9 +77,18 @@ namespace FFSharp.Native
         /// Free a <see cref="Unsafe.AVDictionary"/>, clearing all entries.
         /// </summary>
         /// <param name="ADict">The <see cref="Unsafe.AVDictionary"/>.</param>
+        /// <remarks>
+        /// Sets <paramref name="ADict"/>'s target to <see langword="null"/>.
+        /// </remarks>
         public static void Free(Movable<Unsafe.AVDictionary> ADict)
         {
-            // No null-check necessary.
+            Debug.Assert(
+                !ADict.IsNull,
+                "Dict is null.",
+                "This indicates a contract violation."
+            );
+
+            // No present-check necessary.
 
             Unsafe.ffmpeg.av_dict_free(ADict);
         }
@@ -249,7 +264,13 @@ namespace FFSharp.Native
             const char C_Slash = '\\';
             const char C_Max = '\x7F';
 
-            // No null-check necessary.
+            Debug.Assert(
+                !ADict.IsNull,
+                "Dict is null.",
+                "This indicates a contract violation."
+            );
+
+            // No present-check necessary.
 
             Debug.Assert(
                 AKeyValSep != null,
@@ -309,7 +330,13 @@ namespace FFSharp.Native
                 AVDictionaryFlags.DoNotStrdupKeys
                 | AVDictionaryFlags.DoNotStrdupValues;
 
-            // No null-check necessary.
+            Debug.Assert(
+                !ADict.IsNull,
+                "Dict is null.",
+                "This indicates a contract violation."
+            );
+
+            // No present-check necessary.
 
             Debug.Assert(
                 AKey != null,
