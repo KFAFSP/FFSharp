@@ -259,7 +259,8 @@ namespace FFSharp.Native
     /// </remarks>
     // ReSharper disable errors
     internal readonly unsafe struct Movable<T> :
-        IEquatable<Movable<T>>
+        IEquatable<Movable<T>>,
+        IEquatable<Movable>
         // cannot implement IEquatable<T**>
         where T : unmanaged
     {
@@ -313,7 +314,13 @@ namespace FFSharp.Native
         #region IEquatable<Movable<T>>
         /// <inheritdoc />
         [Pure]
-        public bool Equals(Movable<T> ARef) => Raw == ARef.Raw;
+        public bool Equals(Movable<T> AMovable) => Raw == AMovable.Raw;
+        #endregion
+
+        #region IEquatable<Movable>
+        /// <inheritdoc />
+        [Pure]
+        public bool Equals(Movable AMovable) => Raw == AMovable.Raw;
         #endregion
 
         /// <summary>
@@ -333,7 +340,10 @@ namespace FFSharp.Native
         {
             switch (AObject)
             {
-                case Movable<T> movable:
+                case Movable<T> movableT:
+                    return Equals(movableT);
+
+                case Movable movable:
                     return Equals(movable);
 
                 default:
@@ -441,6 +451,29 @@ namespace FFSharp.Native
         /// to a different target pointer; otherwise <see langword="false"/>.
         /// </returns>
         public static bool operator !=(Movable<T> ALhs, Movable<T> ARhs) => !ALhs.Equals(ARhs);
+
+        /// <summary>
+        /// Check pointer equality for a <see cref="Movable{T}"/> and a <see cref="Movable"/>
+        /// struct.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
+        /// to the same target pointer; otherwise <see langword="false"/>.
+        /// </returns>
+        public static bool operator ==(Movable<T> ALhs, Movable ARhs) => ALhs.Equals(ARhs);
+        /// <summary>
+        /// Check pointer inequality for a <see cref="Movable{T}"/> and a <see cref="Movable"/>
+        /// struct.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
+        /// to a different target pointer; otherwise <see langword="false"/>.
+        /// </returns>
+        public static bool operator !=(Movable<T> ALhs, Movable ARhs) => !ALhs.Equals(ARhs);
 
         /// <summary>
         /// Check pointer equality for a <see cref="Movable{T}"/> struct and a pointer.

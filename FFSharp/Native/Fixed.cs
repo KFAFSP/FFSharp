@@ -191,7 +191,8 @@ namespace FFSharp.Native
     /// </remarks>
     // ReSharper disable errors
     internal readonly unsafe struct Fixed<T> :
-        IEquatable<Fixed<T>>
+        IEquatable<Fixed<T>>,
+        IEquatable<Fixed>
         // cannot implement IEquatable<T*>
         where T : unmanaged
     {
@@ -237,6 +238,12 @@ namespace FFSharp.Native
         public bool Equals(Fixed<T> AFixed) => Raw == AFixed.Raw;
         #endregion
 
+        #region IEquatable<Fixed>
+        /// <inheritdoc />
+        [Pure]
+        public bool Equals(Fixed AFixed) => Raw == AFixed.Raw;
+        #endregion
+
         /// <summary>
         /// Check whether this <see cref="Fixed{T}"/> is equal to the specified pointer.
         /// </summary>
@@ -254,7 +261,10 @@ namespace FFSharp.Native
         {
             switch (AObject)
             {
-                case Fixed<T> @fixed:
+                case Fixed<T> @fixedT:
+                    return Equals(@fixedT);
+
+                case Fixed @fixed:
                     return Equals(@fixed);
 
                 default:
@@ -329,6 +339,27 @@ namespace FFSharp.Native
         /// to a different struct; otherwise <see langword="false"/>.
         /// </returns>
         public static bool operator !=(Fixed<T> ALhs, Fixed<T> ARhs) => !ALhs.Equals(ARhs);
+
+        /// <summary>
+        /// Check pointer equality for a <see cref="Fixed{T}"/> and a <see cref="Fixed"/> struct.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
+        /// to the same struct; otherwise <see langword="false"/>.
+        /// </returns>
+        public static bool operator ==(Fixed<T> ALhs, Fixed ARhs) => ALhs.Equals(ARhs);
+        /// <summary>
+        /// Check pointer inequality for a <see cref="Fixed{T}"/> and a <see cref="Fixed"/> struct.
+        /// </summary>
+        /// <param name="ALhs">The left hand side.</param>
+        /// <param name="ARhs">The right hand side.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="ALhs"/> and <paramref name="ARhs"/> point
+        /// to a different struct; otherwise <see langword="false"/>.
+        /// </returns>
+        public static bool operator !=(Fixed<T> ALhs, Fixed ARhs) => !ALhs.Equals(ARhs);
 
         /// <summary>
         /// Check pointer equality for a <see cref="Fixed{T}"/> struct and a pointer.

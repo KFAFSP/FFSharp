@@ -109,7 +109,8 @@ namespace FFSharp.Native
             Assert.That(test == test.Raw && !(test != test.Raw));
         }
 
-        [TestCaseSource(nameof(MovableAnyTestCases))]
+        [TestCaseSource(nameof(MovableAnyAlikeTestCases))]
+        [TestCaseSource(nameof(MovableAnyNotAlikeTestCases))]
         [Description("Equals on Movable and any is correct.")]
         public bool Equals_MovableAny_Correct(object AMovable, object AOther)
         {
@@ -225,7 +226,7 @@ namespace FFSharp.Native
             Assert.That(test, Is.EqualTo(_FPtrOne));
         }
 
-        [TestCaseSource(nameof(MovableAnyTestCases))]
+        [TestCaseSource(nameof(MovableAnyAlikeTestCases))]
         [Description("Binary equals operator on Movables is correct.")]
         public bool EqOp_MovableMocable_Correct(Movable ALeft, Movable ARight)
         {
@@ -233,7 +234,7 @@ namespace FFSharp.Native
         }
 
         [UsedImplicitly]
-        public static IEnumerable MovableAnyTestCases
+        public static IEnumerable MovableAnyAlikeTestCases
         {
             get
             {
@@ -248,6 +249,16 @@ namespace FFSharp.Native
                     .SetDescription("Pointer and different pointer is false.");
             }
         }
+        [UsedImplicitly]
+        public static IEnumerable MovableAnyNotAlikeTestCases
+        {
+            get
+            {
+                yield return new TestCaseData(new Movable(), new object())
+                    .Returns(false)
+                    .SetDescription("Movable and anything else is false.");
+            }
+        }
     }
     // ReSharper restore errors
 
@@ -258,6 +269,7 @@ namespace FFSharp.Native
     [TestOf(typeof(Movable<>))]
     internal sealed unsafe class MovableTTests
     {
+        static readonly Movable _FPtrOne = new Movable((void**)1);
         static readonly Movable<int> _FIntPtrOne = new Movable<int>((int**)1);
         static readonly Movable<int> _FIntPtrTwo = new Movable<int>((int**)2);
         static readonly Movable<bool> _FBoolPtrOne = new Movable<bool>((bool**)1);
@@ -356,6 +368,7 @@ namespace FFSharp.Native
 
         [TestCaseSource(nameof(MovableAnyAlikeTestCases))]
         [TestCaseSource(nameof(MovableAnyNotAlikeTestCases))]
+        [TestCaseSource(nameof(MovableUntypedTestCases))]
         [Description("Equals on Movable and any is correct.")]
         public bool Equals_MovableAny_Correct(object AMovable, object AOther)
         {
@@ -454,6 +467,15 @@ namespace FFSharp.Native
         }
 
         [Test]
+        [Description("Implicit cast to untyped Movable wraps pointer.")]
+        public void ImplicitCast_ToMovable_ReturnsMovableWrappingPointer()
+        {
+            Movable test = _FIntPtrOne;
+
+            Assert.That(test.Raw == _FIntPtrOne.Raw);
+        }
+
+        [Test]
         [Description("Implicit cast to IntPtr returns Address.")]
         public void ImplicitCast_ToIntPtr_ReturnsAddress()
         {
@@ -473,7 +495,14 @@ namespace FFSharp.Native
 
         [TestCaseSource(nameof(MovableAnyAlikeTestCases))]
         [Description("Binary equals operator on Movables is correct.")]
-        public bool EqOp_MovableMocable_Correct(Movable<int> ALeft, Movable<int> ARight)
+        public bool EqOp_MovableMovable_Correct(Movable<int> ALeft, Movable<int> ARight)
+        {
+            return ALeft == ARight && !(ALeft != ARight);
+        }
+
+        [TestCaseSource(nameof(MovableUntypedTestCases))]
+        [Description("Binary equals operator on Movable and untyped Movable is correct.")]
+        public bool EqOp_MovableUntyped_Correct(Movable<int> ALeft, Movable ARight)
         {
             return ALeft == ARight && !(ALeft != ARight);
         }
@@ -494,7 +523,6 @@ namespace FFSharp.Native
                     .SetDescription("Pointer and different pointer is false.");
             }
         }
-
         [UsedImplicitly]
         public static IEnumerable MovableAnyNotAlikeTestCases
         {
@@ -506,6 +534,22 @@ namespace FFSharp.Native
                 yield return new TestCaseData(_FIntPtrOne, _FBoolPtrOne)
                     .Returns(false)
                     .SetDescription("Pointer and different-typed pointer is false.");
+            }
+        }
+        [UsedImplicitly]
+        public static IEnumerable MovableUntypedTestCases
+        {
+            get
+            {
+                yield return new TestCaseData(new Movable<int>(), new Movable())
+                    .Returns(true)
+                    .SetDescription("Null and untyped null is true.");
+                yield return new TestCaseData(_FIntPtrOne, _FPtrOne)
+                    .Returns(true)
+                    .SetDescription("Pointer and untyped same pointer is true.");
+                yield return new TestCaseData(_FIntPtrTwo, _FPtrOne)
+                    .Returns(false)
+                    .SetDescription("Pointer and untyped different pointer is false.");
             }
         }
     }

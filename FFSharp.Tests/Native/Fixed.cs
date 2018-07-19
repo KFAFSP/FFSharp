@@ -76,7 +76,8 @@ namespace FFSharp.Native
             Assert.That(test == test.Raw && !(test != test.Raw));
         }
 
-        [TestCaseSource(nameof(FixedAnyTestCases))]
+        [TestCaseSource(nameof(FixedAnyAlikeTestCases))]
+        [TestCaseSource(nameof(FixedAnyNotAlikeTestCases))]
         [Description("Equals on Fixed and any is correct.")]
         public bool Equals_FixedAny_Correct(object AFixed, object AOther)
         {
@@ -176,7 +177,7 @@ namespace FFSharp.Native
             Assert.That(test, Is.EqualTo(_FPtrOne));
         }
 
-        [TestCaseSource(nameof(FixedAnyTestCases))]
+        [TestCaseSource(nameof(FixedAnyAlikeTestCases))]
         [Description("Binary equals operator on Fixeds is correct.")]
         public bool EqOp_FixedFixed_Correct(Fixed ALeft, Fixed ARight)
         {
@@ -184,7 +185,7 @@ namespace FFSharp.Native
         }
 
         [UsedImplicitly]
-        public static IEnumerable FixedAnyTestCases
+        public static IEnumerable FixedAnyAlikeTestCases
         {
             get
             {
@@ -199,6 +200,16 @@ namespace FFSharp.Native
                     .SetDescription("Pointer and different pointer is false.");
             }
         }
+        [UsedImplicitly]
+        public static IEnumerable FixedAnyNotAlikeTestCases
+        {
+            get
+            {
+                yield return new TestCaseData(new Fixed(), new object())
+                    .Returns(false)
+                    .SetDescription("Fixed and anything else is false.");
+            }
+        }
     }
     // ReSharper restore errors
 
@@ -209,6 +220,7 @@ namespace FFSharp.Native
     [TestOf(typeof(Fixed<>))]
     internal sealed unsafe class FixedTTests
     {
+        static readonly Fixed _FPtrOne = new Fixed((void*)1);
         static readonly Fixed<int> _FIntPtrOne = new Fixed<int>((int*)1);
         static readonly Fixed<int> _FIntPtrTwo = new Fixed<int>((int*)2);
         static readonly Fixed<bool> _FBoolPtrOne = new Fixed<bool>((bool*)1);
@@ -274,6 +286,7 @@ namespace FFSharp.Native
 
         [TestCaseSource(nameof(FixedAnyAlikeTestCases))]
         [TestCaseSource(nameof(FixedAnyNotAlikeTestCases))]
+        [TestCaseSource(nameof(FixedUntypedTestCases))]
         [Description("Equals on Fixed and any is correct.")]
         public bool Equals_FixedAny_Correct(object AFixed, object AOther)
         {
@@ -401,6 +414,13 @@ namespace FFSharp.Native
             return ALeft == ARight && !(ALeft != ARight);
         }
 
+        [TestCaseSource(nameof(FixedUntypedTestCases))]
+        [Description("Binary equals operator on Fixed and untyped Fixed is correct.")]
+        public bool EqOp_FixedUntyped_Correct(Fixed<int> ALeft, Fixed ARight)
+        {
+            return ALeft == ARight && !(ALeft != ARight);
+        }
+
         [UsedImplicitly]
         public static IEnumerable FixedAnyAlikeTestCases
         {
@@ -417,7 +437,6 @@ namespace FFSharp.Native
                     .SetDescription("Pointer and different pointer is false.");
             }
         }
-
         [UsedImplicitly]
         public static IEnumerable FixedAnyNotAlikeTestCases
         {
@@ -429,6 +448,22 @@ namespace FFSharp.Native
                 yield return new TestCaseData(_FIntPtrOne, _FBoolPtrOne)
                     .Returns(false)
                     .SetDescription("Pointer and different-typed pointer is false.");
+            }
+        }
+        [UsedImplicitly]
+        public static IEnumerable FixedUntypedTestCases
+        {
+            get
+            {
+                yield return new TestCaseData(new Fixed<int>(), new Fixed())
+                    .Returns(true)
+                    .SetDescription("Null and untyped null is true.");
+                yield return new TestCaseData(_FIntPtrOne, _FPtrOne)
+                    .Returns(true)
+                    .SetDescription("Pointer and untyped same pointer is true.");
+                yield return new TestCaseData(_FIntPtrTwo, _FPtrOne)
+                    .Returns(false)
+                    .SetDescription("Pointer and untyped different pointer is false.");
             }
         }
     }
