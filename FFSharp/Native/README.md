@@ -10,10 +10,10 @@ Class `AVBuffer`
 | --- | --- | :---: | --- |
 | `av_buffer_alloc`         | `Alloc`           | :heavy_check_mark:    | Assert: `Size > 0`. Integrated alloc check. |
 | `av_buffer_allocz`        | `AllocZ`          | :heavy_check_mark:    | Assert: `Size > 0`. Integrated alloc check. |
-| `av_buffer_create`        | `Create`          | :heavy_check_mark:    | Assert: `Size > 0`. Wraps `Action<Fixed<byte>>` free delegate. Uses `AVBufferFlags`. Integrated alloc check. |
+| `av_buffer_create`        | `Create`          | :heavy_check_mark:    | Assert: `Size > 0`. Wraps `Action<Fixed, Fixed<byte>>` free delegate. Uses `AVBufferFlags`. Integrated alloc check. |
 | `av_buffer_default_free`  | -                 | ~~EXCLUDED~~          | Not necessary to expose to the user. |
 | `av_buffer_get_ref_count` | `GetRefCount`     | :heavy_check_mark:    | - |
-| `av_buffer_get_opaque`    | -                 | :x:                   | - |
+| `av_buffer_get_opaque`    | `GetOpaque`       | :heavy_check_mark:    | - |
 | `av_buffer_is_writable`   | `IsWritable`      | :heavy_check_mark:    | - |
 | `av_buffer_make_writable` | `MakeWritable`    | :heavy_check_mark:    | - |
 | `av_buffer_realloc`       | `Realloc`         | :heavy_check_mark:    | Assert: `Size > 0`. |

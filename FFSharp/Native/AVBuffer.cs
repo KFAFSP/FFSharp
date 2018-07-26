@@ -78,7 +78,8 @@ namespace FFSharp.Native
         public static Result<Fixed<Unsafe.AVBufferRef>> Create(
             Fixed<byte> AData,
             int ASize,
-            [CanBeNull] Action<Fixed<byte>> AFree = null,
+            [CanBeNull] Action<Fixed, Fixed<byte>> AFree = null,
+            Fixed AOpaque = default,
             AVBufferFlags AFlags = AVBufferFlags.None
         )
         {
@@ -98,19 +99,36 @@ namespace FFSharp.Native
             {
                 if (AFree == null) return null;
 
-                return (opaque, ptr) => AFree(ptr);
+                return (opaque, ptr) => AFree(opaque, ptr);
             }
 
             Fixed<Unsafe.AVBufferRef> buffer = Unsafe.ffmpeg.av_buffer_create(
                 AData,
                 ASize,
                 make_free_delegate(),
-                null,
+                AOpaque,
                 (int)AFlags
             );
             if (buffer.IsNull) return new BadAllocationException(typeof(Unsafe.AVBufferRef));
 
             return buffer;
+        }
+
+        /// <summary>
+        /// Get the opaque pointer from the underlying <see cref="Unsafe.AVBuffer"/>.
+        /// </summary>
+        /// <param name="ABuf">The <see cref="Unsafe.AVBufferRef"/>.</param>
+        /// <returns>The opaque <see cref="Fixed"/> pointer.</returns>
+        [Pure]
+        public static Fixed GetOpaque(Fixed<Unsafe.AVBufferRef> ABuf)
+        {
+            Debug.Assert(
+                !ABuf.IsNull,
+                "Buf is null.",
+                "This indicates a contract violation."
+            );
+
+            return Unsafe.ffmpeg.av_buffer_get_opaque(ABuf);
         }
 
         /// <summary>
