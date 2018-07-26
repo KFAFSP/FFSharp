@@ -21,36 +21,37 @@ Most important goals are the decoding pipeline for MPEG2 in software and with DX
 
 ### Native
 
-- [ ] AVUtil lib
+- [x] LibAVUtil
+  - [ ] AVBufferPool
+  - [x] AVBuffer
   - [x] AVDictionary
   - [x] AVFrame
-  - [x] AVBufferRef
-  - [ ] AVOption (on hold)
-  - [ ] AVTreeNode (**FFmpeg.AutoGen**: no bindings)
+  - [ ] AVOption
+  - [ ] AVTree
   
-- [ ] AVFormat lib
-  - [x] AVIOContext
+- [ ] LibAVFormat
   - [ ] AVFormatContext
-  - [ ] AVInputFormat
+  - [x] AVInputFormat
+  - [x] AVIOContext  
   - [ ] AVOutputFormat
   - [ ] AVStream
  
-- [ ] AVCodec lib
+- [ ] LibAVCodec
   - [ ] AVCodec
   - [ ] AVCodecContext
-  - [ ] AVPacket
   - [ ] AVHWDeviceContext
+  - [ ] AVPacket  
 
 ### Managed
 
-- [x] Dictionary
 - [ ] Codec
 - [ ] Container
-- [ ] Muxer
 - [ ] Demuxer
+- [x] Dictionary
+- [ ] HardwareDevice
+- [ ] Muxer
 - [ ] Stream
 - [ ] Transcode
-- [ ] HardwareDevice
 
 ### Prefab
 

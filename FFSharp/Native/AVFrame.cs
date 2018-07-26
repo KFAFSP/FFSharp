@@ -150,29 +150,6 @@ namespace FFSharp.Native
         }
 
         /// <summary>
-        /// Get <see cref="Unsafe.AVFrameSideData"/> of a <see cref="Unsafe.AVFrame"/>.
-        /// </summary>
-        /// <param name="AFrame">The <see cref="Unsafe.AVFrame"/>.</param>
-        /// <param name="AType">The <see cref="Unsafe.AVFrameSideDataType"/>.</param>
-        /// <returns>
-        /// <see cref="Result"/> wrapping the <see cref="Unsafe.AVFrameSideData"/>.
-        /// </returns>
-        [Pure]
-        public static Fixed<Unsafe.AVFrameSideData> GetSideData(
-            Fixed<Unsafe.AVFrame> AFrame,
-            Unsafe.AVFrameSideDataType AType
-        )
-        {
-            Debug.Assert(
-                !AFrame.IsNull,
-                "Frame is null.",
-                "This indicates a contract violation."
-            );
-
-            return Unsafe.ffmpeg.av_frame_get_side_data(AFrame, AType);
-        }
-
-        /// <summary>
         /// Get the <see cref="Unsafe.AVBufferRef"/> for the specified plane of a
         /// <see cref="Unsafe.AVFrame"/>.
         /// </summary>
@@ -200,6 +177,29 @@ namespace FFSharp.Native
             if (buffer.IsNull) return new FFmpegException("Error getting plane buffer.");
 
             return buffer;
+        }
+
+        /// <summary>
+        /// Get <see cref="Unsafe.AVFrameSideData"/> of a <see cref="Unsafe.AVFrame"/>.
+        /// </summary>
+        /// <param name="AFrame">The <see cref="Unsafe.AVFrame"/>.</param>
+        /// <param name="AType">The <see cref="Unsafe.AVFrameSideDataType"/>.</param>
+        /// <returns>
+        /// <see cref="Result"/> wrapping the <see cref="Unsafe.AVFrameSideData"/>.
+        /// </returns>
+        [Pure]
+        public static Fixed<Unsafe.AVFrameSideData> GetSideData(
+            Fixed<Unsafe.AVFrame> AFrame,
+            Unsafe.AVFrameSideDataType AType
+        )
+        {
+            Debug.Assert(
+                !AFrame.IsNull,
+                "Frame is null.",
+                "This indicates a contract violation."
+            );
+
+            return Unsafe.ffmpeg.av_frame_get_side_data(AFrame, AType);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace FFSharp.Native
     /// Provides methods that operate on <see cref="Unsafe.AVBufferRef"/>.
     /// </summary>
     // ReSharper disable errors
-    internal static unsafe class AVBufferRef
+    internal static unsafe class AVBuffer
     {
         /// <summary>
         /// Allocate a new buffer and get a <see cref="Unsafe.AVBufferRef"/> to it.

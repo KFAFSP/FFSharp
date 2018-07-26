@@ -171,44 +171,11 @@ namespace FFSharp.Native
         /// <param name="AUrl">The URL.</param>
         /// <param name="AOpenMode">The <see cref="AVIOOpenMode"/>.</param>
         /// <param name="AFlags">The <see cref="AVIOFlags"/>.</param>
-        /// <returns><see cref="Result"/> of the operation.</returns>
-        [MustUseReturnValue]
-        public static Result Open(
-            Movable<Unsafe.AVIOContext> AContext,
-            [NotNull] string AUrl,
-            AVIOOpenMode AOpenMode,
-            AVIOFlags AFlags = AVIOFlags.None
-        )
-        {
-            Debug.Assert(
-                !AContext.IsNull,
-                "Context is null.",
-                "This indicates a contract violation."
-            );
-
-            Debug.Assert(
-                AUrl != null,
-                "URL is null.",
-                "This indicates a contract violation."
-            );
-
-            // No present-check necessary.
-
-            return Unsafe.ffmpeg.avio_open(AContext, AUrl, (int)AOpenMode | (int)AFlags).ToResult();
-        }
-
-        /// <summary>
-        /// Create and open a <see cref="Unsafe.AVIOContext"/>.
-        /// </summary>
-        /// <param name="AContext">The <see cref="Unsafe.AVIOContext"/>.</param>
-        /// <param name="AUrl">The URL.</param>
-        /// <param name="AOpenMode">The <see cref="AVIOOpenMode"/>.</param>
-        /// <param name="AFlags">The <see cref="AVIOFlags"/>.</param>
         /// <param name="AInterruptCallback">The <see cref="Unsafe.AVIOInterruptCB"/>.</param>
         /// <param name="AOptions">The <see cref="Unsafe.AVDictionary"/> of options.</param>
         /// <returns><see cref="Result"/> of the operation.</returns>
         [MustUseReturnValue]
-        public static Result Open2(
+        public static Result Open(
             Movable<Unsafe.AVIOContext> AContext,
             [NotNull] string AUrl,
             AVIOOpenMode AOpenMode,
