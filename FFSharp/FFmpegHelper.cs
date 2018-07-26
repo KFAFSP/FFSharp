@@ -41,11 +41,29 @@ namespace FFSharp
         /// Wraps an appropriate error if <paramref name="ACode"/> is less than 0.
         /// </remarks>
         [MustUseReturnValue]
-        public static Result ToResult(this int ACode, [CanBeNull] string AMessage = null)
+        public static Result<uint> ToResultUInt(this int ACode, [CanBeNull] string AMessage = null)
         {
 			return ACode < 0
-				? new Result(new FFmpegError(AMessage, ACode))
-				: Result.Ok();
+				? new Result<uint>(new FFmpegError(AMessage, ACode))
+				: Result.Ok((uint)ACode);
+        }
+
+        /// <summary>
+        /// Check an FFmpeg result code discarding success values.
+        /// </summary>
+        /// <param name="ACode">The result code.</param>
+        /// <param name="AMessage">An optional custom error message.</param>
+        /// <returns>A <see cref="Result"/> of the operation.</returns>
+        /// <remarks>
+        /// Wraps an appropriate error if <paramref name="ACode"/> is less than 0.
+        /// </remarks
+        [MustUseReturnValue]
+        public static Result ToResult(this int ACode, [CanBeNull] string AMessage = null)
+        {
+            var result = ACode.ToResultUInt();
+            return result.IsSuccess
+                ? Result.Ok()
+                : new Result(result.Error);
         }
     }
 }
