@@ -46,7 +46,7 @@ Class `AVDictionary`
 | `av_dict_get_string`      | `GetString`       | :heavy_check_mark:    | Assert: Separators are valid. Buffer handling. |
 | `av_dict_parse_string`    | `ParseString`     | :heavy_check_mark:    | Assert: Separators are valid. Uses `AVDictionaryFlags`. |
 | `av_dict_set`             | `Set`             | :heavy_check_mark:    | Prohibits `AV_DICT_DONT_STRDUP_KEY` and `AV_DICT_DONT_STRDUP_VAL`. Uses `AVDictionaryFlags`. |
-| `av_dict_set_int`         | -                 | :x:                   | - |
+| `av_dict_set_int`         | -                 | ~~EXCLUDED~~          | Replaced by `Set`. |
 | -                         | `ToPair`          | :heavy_check_mark:    | Helper for `AVDictionaryEntry`. |
 
 ### `AVFrame`
