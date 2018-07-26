@@ -80,7 +80,6 @@ Class `AVOption`
 
 | Name (C) | Name (C#) | Status | Remarks |
 | --- | --- | :---: | --- |
-
 | `av_opt_child_class_next`             | - | :x:   | - |
 | `av_opt_child_next`                   | - | :x:   | - |
 | `av_opt_copy`                         | - | :x:   | - |
