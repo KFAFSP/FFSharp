@@ -57,6 +57,11 @@
     <Compile Include="Native\AVDictionaryFlags.cs" />
     <Compile Include="Native\AVFrame.cs" />
     <Compile Include="Native\AVFrameCropFlags.cs" />
+    <Compile Include="Native\AVIOContext.cs" />
+    <Compile Include="Native\AVIOFlags.cs" />
+    <Compile Include="Native\AVIOMode.cs" />
+    <Compile Include="Native\AVIOSeekFlags.cs" />
+    <Compile Include="Native\AVIOSeekOrigin.cs" />
     <Compile Include="Native\IntPtrExtensions.cs" />
     <Compile Include="Native\Movable.cs" />
     <Compile Include="Native\Fixed.cs" />

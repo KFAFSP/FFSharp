@@ -99,10 +99,7 @@ namespace FFSharp.Native
             {
                 if (AFree == null) return null;
 
-                return (opaque, ptr) =>
-                {
-                    AFree(opaque, ptr);
-                };
+                return (opaque, ptr) => AFree(opaque, ptr);
             }
 
             Fixed<Unsafe.AVBufferRef> buffer = Unsafe.ffmpeg.av_buffer_create(
