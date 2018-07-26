@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using JetBrains.Annotations;
 
 using Whetstone.Contracts;
@@ -116,62 +117,6 @@ namespace FFSharp.Native
 
             return Unsafe.ffmpeg.avio_close(AContext).ToResult();
         }
-
-        class ProtocolEnumerator : IEnumerator<string>
-        {
-            readonly bool FOutput;
-
-            void* FState;
-            bool FStarted;
-
-            public ProtocolEnumerator(bool AOutput)
-            {
-                FOutput = AOutput;
-
-                Reset();
-            }
-
-            #region IDisposable
-            public void Dispose() { }
-            #endregion
-
-            #region IEnumerator
-            public void Reset()
-            {
-                FStarted = false;
-                FState = null;
-                Current = null;
-            }
-
-            public bool MoveNext()
-            {
-                if (FStarted && Current == null)
-                    return false;
-
-                FStarted = true;
-                fixed (void** state = &FState)
-                    Current = Unsafe.ffmpeg.avio_enum_protocols(state, FOutput ? 1 : 0);
-
-                return Current != null;
-            }
-
-            object IEnumerator.Current => Current;
-            #endregion
-
-            #region IEnumerator<string>
-            public string Current { get; private set; }
-            #endregion
-        }
-
-        /// <summary>
-        /// Enumerate all available protocols.
-        /// </summary>
-        /// <param name="AOutput">
-        /// On <see langword="true"/> enumerate output protocols; otherwise input protocols.
-        /// </param>
-        /// <returns>An <see cref="IEnumerator{T}"/> of all available protocols.</returns>
-        public static IEnumerator<string> EnumProtocols(bool AOutput)
-            => new ProtocolEnumerator(AOutput);
 
         /// <summary>
         /// Get a value indicating whether a <see cref="Unsafe.AVIOContext"/> has reached EOF.
