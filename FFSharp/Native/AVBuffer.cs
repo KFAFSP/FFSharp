@@ -78,8 +78,7 @@ namespace FFSharp.Native
         public static Result<Fixed<Unsafe.AVBufferRef>> Create(
             Fixed<byte> AData,
             int ASize,
-            [CanBeNull] Action<Fixed, Fixed<byte>> AFree = null,
-            Fixed AOpaque = default,
+            [CanBeNull] Action<Fixed<byte>> AFree = null,
             AVBufferFlags AFlags = AVBufferFlags.None
         )
         {
@@ -99,14 +98,14 @@ namespace FFSharp.Native
             {
                 if (AFree == null) return null;
 
-                return (opaque, ptr) => AFree(opaque, ptr);
+                return (opaque, ptr) => AFree(ptr);
             }
 
             Fixed<Unsafe.AVBufferRef> buffer = Unsafe.ffmpeg.av_buffer_create(
                 AData,
                 ASize,
                 make_free_delegate(),
-                AOpaque,
+                null,
                 (int)AFlags
             );
             if (buffer.IsNull) return new BadAllocationException(typeof(Unsafe.AVBufferRef));

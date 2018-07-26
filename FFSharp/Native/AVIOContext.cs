@@ -35,10 +35,9 @@ namespace FFSharp.Native
             Fixed<byte> ABuffer,
             int ABufferSize,
             bool AWritable,
-            Fixed AOpaque,
-            [CanBeNull] Func<Fixed, Fixed<byte>, int, int> AReadPacket,
-            [CanBeNull] Func<Fixed, Fixed<byte>, int, int> AWritePacket,
-            [CanBeNull] Func<Fixed, long, AVIOSeekOrigin, AVIOSeekFlags, long> ASeek
+            [CanBeNull] Func<Fixed<byte>, int, int> AReadPacket,
+            [CanBeNull] Func<Fixed<byte>, int, int> AWritePacket,
+            [CanBeNull] Func<long, AVIOSeekOrigin, AVIOSeekFlags, long> ASeek
         )
         {
             Debug.Assert(
@@ -57,14 +56,14 @@ namespace FFSharp.Native
             {
                 if (AReadPacket == null) return null;
 
-                return (opaque, buf, sz) => AReadPacket(opaque, buf, sz);
+                return (opaque, buf, sz) => AReadPacket(buf, sz);
             }
 
             Unsafe.avio_alloc_context_write_packet make_write_delegate()
             {
                 if (AWritePacket == null) return null;
 
-                return (opaque, buf, sz) => AWritePacket(opaque, buf, sz);
+                return (opaque, buf, sz) => AWritePacket(buf, sz);
             }
 
             Unsafe.avio_alloc_context_seek make_seek_delegate()
@@ -88,7 +87,7 @@ namespace FFSharp.Native
                     if (whence < (int)AVIOSeekOrigin.Begin || whence > (int)AVIOSeekOrigin.End)
                         return Unsafe.ffmpeg.AVERROR(Unsafe.ffmpeg.EINVAL);
 
-                    return ASeek(opaque, offset, (AVIOSeekOrigin)whence, flags);
+                    return ASeek(offset, (AVIOSeekOrigin)whence, flags);
                 };
             }
 
@@ -96,7 +95,7 @@ namespace FFSharp.Native
                 ABuffer,
                 ABufferSize,
                 AWritable ? 1 : 0,
-                AOpaque,
+                null,
                 make_read_delegate(),
                 make_write_delegate(),
                 make_seek_delegate()

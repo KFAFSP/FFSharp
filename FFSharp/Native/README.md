@@ -10,7 +10,7 @@ Class `AVBuffer`
 | --- | --- | :---: | --- |
 | `av_buffer_alloc`         | `Alloc`           | :heavy_check_mark:    | Assert: `Size > 0`. Integrated alloc check. |
 | `av_buffer_allocz`        | `AllocZ`          | :heavy_check_mark:    | Assert: `Size > 0`. Integrated alloc check. |
-| `av_buffer_create`        | `Create`          | :heavy_check_mark:    | Assert: `Size > 0`. Wraps `Action<Fixed, Fixed<byte>>` free delegate. Uses `AVBufferFlags`. Integrated alloc check. |
+| `av_buffer_create`        | `Create`          | :heavy_check_mark:    | Assert: `Size > 0`. Wraps `Action<Fixed<byte>>` free delegate. Uses `AVBufferFlags`. Integrated alloc check. |
 | `av_buffer_default_free`  | -                 | ~~EXCLUDED~~          | Not necessary to expose to the user. |
 | `av_buffer_get_ref_count` | `GetRefCount`     | :heavy_check_mark:    | - |
 | `av_buffer_get_opaque`    | -                 | :x:                   | - |
@@ -110,11 +110,13 @@ Class `AVTree`
 
 | Name (C) | Name (C#) | Status | Remarks |
 | --- | --- | :---: | --- |
-| `av_tree_node_alloc`  | `Alloc`   | :x:   | - |
-| `av_tree_find`        | `Find`    | :x:   | - |
-| `av_tree_destroy`     | `Free`    | :x:   | - |
-| `av_tree_insert`      | `Insert`  | :x:   | - |
-| `av_tree_enumerate`   | `Visit`   | :x:   | - |
+| `av_tree_node_alloc`  | `Alloc`       | :heavy_check_mark:    | Integrated alloc check. |
+| `av_tree_find`        | `Find`        | :heavy_check_mark:    | Wraps `Func<Fixed, Fixed, int>` comapre delegate. Mandatory previous/next output. |
+| `av_tree_destroy`     | `Free`        | :heavy_check_mark:    | - |
+| `av_tree_insert`      | `Insert`      | :heavy_check_mark:    | Wraps `Func<Fixed, Fixed, int>` comapre delegate. |
+| -                     | `InsertItem`  | :heavy_check_mark:    | Helper for `Insert`. |
+| -                     | `RemoveItem`  | :heavy_check_mark:    | Helper for `Insert`. |
+| `av_tree_enumerate`   | `Visit`       | :heavy_check_mark:    | Wraps `Action<Fixed>` visitor delegate. Wraps `Func<Fixed, int>` comapre delegate. |
 
 ## LibAVFormat
 
@@ -125,7 +127,7 @@ Class `AVIOContext`
 | Name (C) | Name (C#) | Status | Remarks |
 | --- | --- | :---: | --- |
 | `avio_accept`         | -                             | :x:                   | - |
-| `avio_alloc_context`  | `Alloc`                       | :heavy_check_mark:    | Assert: `BufferSize > 0`. Wraps `Func<Fixed, Fixed<byte>, int, int>` read and write delegates. Wraps `Func<Fixed, long, AVIOSeekOrigin, AVIOSeekFlags, long>` seek delegate. Integrated alloc check. |
+| `avio_alloc_context`  | `Alloc`                       | :heavy_check_mark:    | Assert: `BufferSize > 0`. Wraps `Func<Fixed<byte>, int, int>` read and write delegates. Wraps `Func<long, AVIOSeekOrigin, AVIOSeekFlags, long>` seek delegate. Integrated alloc check. |
 | `avio_close`          | `Close`                       | :heavy_check_mark:    | - |
 | `avio_closep`         | -                             | ~~EXCLUDED~~          | Replaced by `Close`. |
 | `avio_feof`           | `Feof`                        | :heavy_check_mark:    | - |

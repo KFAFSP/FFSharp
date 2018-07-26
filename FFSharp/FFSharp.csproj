@@ -58,6 +58,7 @@
     <Compile Include="Native\AVInputFormat.cs" />
     <Compile Include="Native\AVSeekFlags.cs" />
     <Compile Include="Native\AVInputFormatFlags.cs" />
+    <Compile Include="Native\AVTree.cs" />
     <Compile Include="Native\LibAVCodec.cs" />
     <Compile Include="Native\LibAVUtil.cs" />
     <Compile Include="Native\LibAVFormat.cs" />
@@ -76,10 +77,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen">
-      <Version>4.0.0.2</Version>
+      <Version>4.0.0.4</Version>
     </PackageReference>
     <PackageReference Include="JetBrains.Annotations">
-      <Version>11.1.0</Version>
+      <Version>2018.2.1</Version>
     </PackageReference>
     <PackageReference Include="Whetstone.Contracts">
       <Version>1.0.0</Version>
