@@ -56,6 +56,8 @@
     <Compile Include="Native\AVDictionary.cs" />
     <Compile Include="Native\AVDictionaryFlags.cs" />
     <Compile Include="Native\AVInputFormat.cs" />
+    <Compile Include="Native\AVOutputFormat.cs" />
+    <Compile Include="Native\AVOutputFormatFlags.cs" />
     <Compile Include="Native\AVSeekFlags.cs" />
     <Compile Include="Native\AVInputFormatFlags.cs" />
     <Compile Include="Native\AVTree.cs" />

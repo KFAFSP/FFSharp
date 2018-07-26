@@ -8,6 +8,9 @@ using Unsafe = FFmpeg.AutoGen;
 
 namespace FFSharp.Native
 {
+    /// <summary>
+    /// Provides methods that operate on <see cref="Unsafe.AVInputFormat"/>.
+    /// </summary>
     // ReSharper disable errors
     internal static unsafe class AVInputFormat
     {
@@ -29,6 +32,7 @@ namespace FFSharp.Native
         /// <returns>
         /// The found <see cref="Unsafe.AVInputFormat"/> or <see langword="null"/> if not found.
         /// </returns>
+        [Pure]
         public static Fixed<Unsafe.AVInputFormat> Find([CanBeNull] string AShortName)
         {
             // No null-check necessary.
@@ -206,6 +210,7 @@ namespace FFSharp.Native
         /// </param>
         /// <param name="AScore">Score of the result.</param>
         /// <returns>The result <see cref="Unsafe.AVInputFormat"/> with the highest score.</returns>
+        [Pure]
         public static Fixed<Unsafe.AVInputFormat> Probe(Fixed<Unsafe.AVProbeData> AProbeData, bool AIsOpened, out int AScore)
         {
             Debug.Assert(
@@ -235,7 +240,7 @@ namespace FFSharp.Native
         /// otherwise it is only valid until the next call to this function.
         /// </remarks>
         [MustUseReturnValue]
-        public static Result<bool> ReadFrame(
+        public static Result<bool> Read(
             Fixed<Unsafe.AVFormatContext> AContext,
             Fixed<Unsafe.AVPacket> APacket
         )

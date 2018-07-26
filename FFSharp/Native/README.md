@@ -171,10 +171,28 @@ Class `AVInputFormat`
 | `av_probe_input_format2`      | -                 | ~~EXCLUDED~~          | Replaced by `Probe`. |
 | `av_probe_input_format3`      | `Probe`           | :heavy_check_mark:    | - |
 | `av_prgram_add_stream_index`  | -                 | :x:                   | - |
-| `av_read_frame`               | `ReadFrame`       | :heavy_check_mark:    | EOF handling. |
+| `av_read_frame`               | `Read`            | :heavy_check_mark:    | EOF handling. |
 | `av_read_pause`               | -                 | :x:                   | - |
 | `av_read_play`                | -                 | :x:                   | - |
 | `av_seek_frame`               | -                 | ~~EXCLUDED~~          | Replaced by `Seek`. |
 | `avformat_seek_file`          | `Seek`            | :heavy_check_mark:    | Uses `AVSeekFlags`. Assert: `Flag combination is valid`. Assert: `Stream in range`. |
+
+### `AVOutputFormat`
+
+Class `AVOutputFormat`
+
+| Name (C) | Name (C#) | Status | Remarks |
+| --- | --- | :---: | --- |
+| `av_write_uncoded_frame_query`        | `CanWriteUncoded`         | :heavy_check_mark:    | - |
+| `av_get_output_timestamp`             | -                         | :x: | - |
+| `av_guess_format`                     | `Guess`                   | :heavy_check_mark:    | - |
+| `av_guess_codec`                      | -                         | :x: | - |
+| `avformat_init_output`                | `Init`                    | :heavy_check_mark:    | Handling for `WriteHeader` call. |
+| `av_write_frame`                      | `Write`                   | :heavy_check_mark:    | Assert: `Flush packet must be allowed.`. |
+| `avformat_write_header`               | `WriteHeader`             | :heavy_check_mark:    | - |
+| `av_interleaved_write_frame`          | `WriteInterleaved`        | :heavy_check_mark:    | - |
+| `av_write_trailer`                    | `WriteTrailer`            | :heavy_check_mark:    | - |
+| `av_write_uncoded_frame`              | `WriteUncoded`            | :heavy_check_mark:    | Assert: `Flush packet must be allowed.`. |
+| `av_interleaved_write_uncoded_frame`  | `WriteUncodedInterleaved` | :heavy_check_mark:    | - |
 
 ## LibAVCodec
