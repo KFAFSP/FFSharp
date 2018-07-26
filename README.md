@@ -28,10 +28,8 @@ Most important goals are the decoding pipeline for MPEG2 in software and with DX
   - [ ] AVOption (on hold)
   - [ ] AVTreeNode (**FFmpeg.AutoGen**: no bindings)
   
-- [ ] AVIO lib
-  - [ ] AVIOContext
-  
 - [ ] AVFormat lib
+  - [x] AVIOContext
   - [ ] AVFormatContext
   - [ ] AVInputFormat
   - [ ] AVOutputFormat
