@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 using JetBrains.Annotations;
 
@@ -57,10 +54,10 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            Unsafe.av_tree_find_cmp make_compare_delegate() => (X, Y) => ACompare(X, Y);
+            Unsafe.av_tree_find_cmp MakeCompareDelegate() => (X, Y) => ACompare(X, Y);
 
             Unsafe.void_ptrArray2 next = new Unsafe.void_ptrArray2();
-            var result = Unsafe.ffmpeg.av_tree_find(ARoot, AKey, make_compare_delegate(), ref next);
+            var result = Unsafe.ffmpeg.av_tree_find(ARoot, AKey, MakeCompareDelegate(), ref next);
 
             APrevious = next[0];
             ANext = next[1];
@@ -111,12 +108,12 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            Unsafe.av_tree_insert_cmp make_compare_delegate() => (X, Y) => ACompare(X, Y);
+            Unsafe.av_tree_insert_cmp MakeCompareDelegate() => (X, Y) => ACompare(X, Y);
 
             Fixed result = Unsafe.ffmpeg.av_tree_insert(
                 ARoot,
                 AKey,
-                make_compare_delegate(),
+                MakeCompareDelegate(),
                 ANext
             );
             return result;
@@ -207,24 +204,24 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            Unsafe.av_tree_enumerate_cmp make_compare_delegate()
+            Unsafe.av_tree_enumerate_cmp MakeCompareDelegate()
             {
                 if (ACompare == null) return null;
 
-                return (opaque, elem) => ACompare(elem);
+                return (BOpaque, BElement) => ACompare(BElement);
             }
 
-            Unsafe.av_tree_enumerate_enu make_visitor_delegate() => (opaque, elem) =>
+            Unsafe.av_tree_enumerate_enu MakeVisitorDelegate() => (BOpaque, BElement) =>
             {
-                AVisitor(elem);
+                AVisitor(BElement);
                 return 0;
             };
 
             Unsafe.ffmpeg.av_tree_enumerate(
                 ARoot,
                 null,
-                make_compare_delegate(),
-                make_visitor_delegate()
+                MakeCompareDelegate(),
+                MakeVisitorDelegate()
             );
         }
     }

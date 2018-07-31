@@ -136,9 +136,9 @@ namespace FFSharp.Native
                 options[I] = AOptions[I].TargetOr(null);
             }
 
-            fixed (Unsafe.AVDictionary** options_ptr = options)
+            fixed (Unsafe.AVDictionary** optionsPtr = options)
             {
-                var result = Unsafe.ffmpeg.avformat_find_stream_info(AContext, options_ptr)
+                var result = Unsafe.ffmpeg.avformat_find_stream_info(AContext, optionsPtr)
                     .ToResult();
 
                 for (int I = 0; I < options.Length; ++I)

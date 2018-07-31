@@ -12,6 +12,7 @@ namespace FFSharp.Native
     /// Use this instead of a <c>void*</c> pointer to better represent the intention and to
     /// statically check contracts. Allows passing pointers through safe contexts.
     /// </remarks>
+    // ReSharper disable errors
     internal readonly unsafe struct Fixed :
         IEquatable<Fixed>
         // cannot implement IEquatable<void*>
@@ -180,6 +181,7 @@ namespace FFSharp.Native
         /// <param name="AFixed">The <see cref="Fixed"/>.</param>
         public static implicit operator IntPtr(Fixed AFixed) => AFixed.Address;
     }
+    // ReSharper restore errors
 
     /// <summary>
     /// Value type wrapping a pointer to a native struct.

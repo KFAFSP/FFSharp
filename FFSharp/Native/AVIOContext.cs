@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 using JetBrains.Annotations;
@@ -23,7 +21,6 @@ namespace FFSharp.Native
         /// <param name="ABuffer">The underlying buffer.</param>
         /// <param name="ABufferSize">The size of the buffer.</param>
         /// <param name="AWritable">Whether the context supports writing.</param>
-        /// <param name="AOpaque">An opaque private pointer.</param>
         /// <param name="AReadPacket">The read callback, can be null.</param>
         /// <param name="AWritePacket">The write callback, can be null.</param>
         /// <param name="ASeek">The seek callback, can be null.</param>
@@ -52,42 +49,42 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            Unsafe.avio_alloc_context_read_packet make_read_delegate()
+            Unsafe.avio_alloc_context_read_packet MakeReadDelegate()
             {
                 if (AReadPacket == null) return null;
 
-                return (opaque, buf, sz) => AReadPacket(buf, sz);
+                return (BOpaque, BBuffer, BCount) => AReadPacket(BBuffer, BCount);
             }
 
-            Unsafe.avio_alloc_context_write_packet make_write_delegate()
+            Unsafe.avio_alloc_context_write_packet MakeWriteDelegate()
             {
                 if (AWritePacket == null) return null;
 
-                return (opaque, buf, sz) => AWritePacket(buf, sz);
+                return (BOpaque, BBuffer, BCount) => AWritePacket(BBuffer, BCount);
             }
 
-            Unsafe.avio_alloc_context_seek make_seek_delegate()
+            Unsafe.avio_alloc_context_seek MakeSeekDelegate()
             {
                 if (ASeek == null) return null;
 
-                return (opaque, offset, whence) =>
+                return (BOpaque, BOffset, BWhence) =>
                 {
                     var flags = AVIOSeekFlags.None;
-                    if ((whence & (int)AVIOSeekFlags.Force) > 0)
+                    if ((BWhence & (int)AVIOSeekFlags.Force) > 0)
                     {
-                        whence ^= (int)AVIOSeekFlags.Force;
+                        BWhence ^= (int)AVIOSeekFlags.Force;
                         flags |= AVIOSeekFlags.Force;
                     }
-                    if ((whence & (int)AVIOSeekFlags.Size) > 0)
+                    if ((BWhence & (int)AVIOSeekFlags.Size) > 0)
                     {
-                        whence ^= (int)AVIOSeekFlags.Size;
+                        BWhence ^= (int)AVIOSeekFlags.Size;
                         flags |= AVIOSeekFlags.Size;
                     }
 
-                    if (whence < (int)AVIOSeekOrigin.Begin || whence > (int)AVIOSeekOrigin.End)
+                    if (BWhence < (int)AVIOSeekOrigin.Begin || BWhence > (int)AVIOSeekOrigin.End)
                         return Unsafe.ffmpeg.AVERROR(Unsafe.ffmpeg.EINVAL);
 
-                    return ASeek(offset, (AVIOSeekOrigin)whence, flags);
+                    return ASeek(BOffset, (AVIOSeekOrigin)BWhence, flags);
                 };
             }
 
@@ -96,9 +93,9 @@ namespace FFSharp.Native
                 ABufferSize,
                 AWritable ? 1 : 0,
                 null,
-                make_read_delegate(),
-                make_write_delegate(),
-                make_seek_delegate()
+                MakeReadDelegate(),
+                MakeWriteDelegate(),
+                MakeSeekDelegate()
             );
             if (context.IsNull) return new BadAllocationException(typeof(Unsafe.AVIOContext));
 
@@ -179,7 +176,7 @@ namespace FFSharp.Native
             [NotNull] string AUrl,
             AVIOOpenMode AOpenMode,
             AVIOFlags AFlags = AVIOFlags.None,
-            [CanBeNull] Fixed<Unsafe.AVIOInterruptCB> AInterruptCallback = default,
+            Fixed<Unsafe.AVIOInterruptCB> AInterruptCallback = default,
             Movable<Unsafe.AVDictionary> AOptions = default
         )
         {

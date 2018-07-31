@@ -66,8 +66,8 @@ namespace FFSharp.Native
         /// <param name="AData">The underlying data array.</param>
         /// <param name="ASize">The size of <paramref name="AData"/> in bytes.</param>
         /// <param name="AFree">
-        /// The free callback, defaults to a wrapped <see cref="Unsafe.ffmpeg.av_free(void*)"/> in
-        /// the form of <see cref="Unsafe.ffmpeg.av_buffer_default_free(void*, byte*)"/>.
+        /// The free callback, defaults to a wrapped <see cref="Unsafe.ffmpeg.av_free"/> in
+        /// the form of <see cref="Unsafe.ffmpeg.av_buffer_default_free"/>.
         /// </param>
         /// <param name="AOpaque">The opaque private tag pointer.</param>
         /// <param name="AFlags">The <see cref="AVBufferFlags"/>.</param>
@@ -95,17 +95,17 @@ namespace FFSharp.Native
                 "This indicates a contract violation."
             );
 
-            Unsafe.av_buffer_create_free make_free_delegate()
+            Unsafe.av_buffer_create_free MakeFreeDelegate()
             {
                 if (AFree == null) return null;
 
-                return (opaque, ptr) => AFree(opaque, ptr);
+                return (BOpaque, BBuffer) => AFree(BOpaque, BBuffer);
             }
 
             Fixed<Unsafe.AVBufferRef> buffer = Unsafe.ffmpeg.av_buffer_create(
                 AData,
                 ASize,
-                make_free_delegate(),
+                MakeFreeDelegate(),
                 AOpaque,
                 (int)AFlags
             );

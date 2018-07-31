@@ -10,7 +10,7 @@ namespace FFSharp.Native
     /// Provides top-level functions of the avcodec library.
     /// </summary>
     // ReSharper disable errors
-    internal static unsafe class LibAVCodec
+    internal static class LibAVCodec
     {
         [NotNull]
         static readonly Lazy<uint> _FVersion;

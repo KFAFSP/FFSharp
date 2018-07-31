@@ -10,7 +10,7 @@ namespace FFSharp.Native
     /// Provides top-level functions of the avutil library.
     /// </summary>
     // ReSharper disable errors
-    internal static unsafe class LibAVUtil
+    internal static class LibAVUtil
     {
         [NotNull]
         static readonly Lazy<uint> _FVersion;
